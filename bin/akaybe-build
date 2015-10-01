@@ -229,6 +229,11 @@
       + ' -l'     // --literate  treat stdio as litcoffee
        // + ' -m'     // --map       generate '.js.map' source map files @todo
       + ' -c'     // --compile   compile to JavaScript, save as .js file
+
+    //// Concatenate vendor JavaScript files.
+      + ' | '     // pipe it to `cat`
+      + 'cat - '  // `cat` accepts piped text unix.stackexchange.com/a/16364
+      + 'src/vendor/*.js '
       + ' > '     // write to file, replace if pre-existing, create if missing
       + 'build/' + pkg.name + '.js'
 
@@ -249,6 +254,9 @@
       + ' -s'     // --stdio     listen for and compile scripts over stdio
       + ' -l'     // --literate  treat stdio as litcoffee
       + ' -c'     // --compile   compile to JavaScript, save as .js file
+      + ' | '     // pipe it to `cat`
+      + 'cat - '  // `cat` accepts piped text unix.stackexchange.com/a/16364
+      + 'src/vendor/*.js '
       + ' > '     // write to file, replace if pre-existing, create if missing
       + 'build/test/' + pkg.name + '-with-test.js'
     ;
