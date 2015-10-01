@@ -3,3 +3,6 @@
 npm-debug.log.*
 node_modules/*
 
+!node_modules/ace-editor-builds
+node_modules/ace-editor-builds/*
+!node_modules/ace-editor-builds/src-noconflict

@@ -4,18 +4,45 @@
   <title>Pegdev Basic Usage</title>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <script src="../build/pegdev.js"></script>
+  <script src="../node_modules/ace-editor-builds/src-noconflict/ace.js"></script>
   <script>
     addEventListener('load', function () {
       var
-        pegdev = new Pegdev({
+        input  = ace.edit('input')
+       ,output = ace.edit('output')
+       ,pegdev = new Pegdev({
         })
       ;
+      input.setTheme('ace/theme/iplastic');
+      input.session.setMode('ace/mode/javascript');
+      output.setTheme('ace/theme/solarized_light');
+      output.session.setMode('ace/mode/javascript');
     });
   </script>
+  <style type="text/css" media="screen">
+    body {
+      overflow: hidden;
+    }
+    #input, #output {
+      position: absolute;
+      top:    150px;
+      bottom:  20px;
+      margin:   0;
+    }
+    #input {
+      left:     0.5%;
+      right:   50.5%;
+    }
+    #output {
+      left:    50.5%;
+      right:    0.5%;
+    }
+  </style>
 </head>
 <body>
   <h1>Pegdev Basic Usage</h1>
   <a href="../index.html">Home</a>
-  <main id="main"></main>
+  <pre id="input">// The input will go in here</pre>
+  <pre id="output">// The output will appear here</pre>
 </body>
 </html>
