@@ -9,11 +9,11 @@ Pegdev
 - [Fork Pegdev on GitHub](https://github.com/oopish/pegdev)
 
 
+#### Usage
+
+- [Usage](http://pegdev.oopish.com/#/doc/usage)
+
+
 #### Test
 
 - [Test](http://pegdev.oopish.com/test/run-test.html)
-
-
-#### Usage
-
-- [Basic Usage](http://pegdev.oopish.com/usage/basic-usage.html)

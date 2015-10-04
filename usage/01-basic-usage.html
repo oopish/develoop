@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Pegdev Basic Usage</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <script src="../build/pegdev.js"></script>
+  <script src="../node_modules/ace-editor-builds/src-noconflict/ace.js"></script>
+  <script>
+    addEventListener('load', function () {
+      var
+        //// Micro jQuery. 
+        $ = document.querySelector.bind(document)
+
+
+        ////@!todo describe
+       ,grammarEd  = ace.edit('grammar-ed')
+       ,parserEd   = ace.edit('parser-ed')
+       ,sourceEd   = ace.edit('source-ed')
+       ,compiledEd = ace.edit('compiled-ed')
+
+
+        ////@!todo describe
+       ,pegdev = new Pegdev({
+        })
+
+
+        ////@!todo describe
+       ,parser
+       ,parseGrammar = function () {
+          try {
+            parser = pegdev.pegjs.buildParser( grammarEd.getValue() );
+            parserEd.setValue(''+parser.parse);
+            compileSource();
+          } catch(error) {
+            parserEd.setValue(''+error);
+          }
+        }
+
+
+        ////@!todo describe
+       ,compiled
+       ,compileSource = function () {
+          try {
+            compiled = parser.parse( sourceEd.getValue() );
+            compiledEd.setValue(''+compiled);
+          } catch(error) {
+            compiledEd.setValue(''+error);
+          }
+        }
+
+      ;
+
+
+      ////@!todo describe
+      grammarEd.setTheme('ace/theme/terminal');
+      parserEd.setTheme('ace/theme/solarized_dark');
+      sourceEd.setTheme('ace/theme/iplastic');
+      compiledEd.setTheme('ace/theme/solarized_light');
+
+
+      ////@!todo describe
+      grammarEd.session.setMode('ace/mode/javascript');
+      parserEd.session.setMode('ace/mode/javascript');
+      sourceEd.session.setMode('ace/mode/javascript');
+      compiledEd.session.setMode('ace/mode/javascript');
+
+
+      ////@!todo describe
+      $('#grammar-wrap h4 .btn').addEventListener('click', parseGrammar);
+      $('#grammar-ed').addEventListener('keypress', function(event) {
+        if (13 === event.keyCode && event.altKey) { event.preventDefault(); parseGrammar(); }
+      });
+      parseGrammar();
+
+      $('#source-wrap  h4 .btn').addEventListener('click', compileSource);
+      $('#source-ed').addEventListener('keypress', function(event) {
+        if (13 === event.keyCode && event.altKey) { event.preventDefault(); compileSource(); }
+      });
+    });
+  </script>
+  <style type="text/css" media="screen">
+
+    /* LAYOUT */
+    html, body {
+      margin: 0;
+      font: bold 14px/1 "Arial", sans-serif;
+      overflow: hidden;
+    }
+    @media screen and (min-width: 1265px) {
+      html, body { font-size: 15px; }
+    }
+    @media screen and (min-width: 1420px) {
+      html, body { font-size: 17px; }
+    }
+    @media screen and (min-width: 1580px) {
+      html, body { font-size: 19px; }
+    }
+    @media screen and (min-width: 1745px) {
+      html, body { font-size: 21px; }
+    }
+    @media screen and (min-width: 1910px) { /* 1080p */
+      html, body { font-size: 23px; }
+    }
+
+
+    /* HEADER */
+    h1 {
+      position: absolute;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0 15px 0 10px;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      background: rgba(16,16,16,0.9);
+      color: #ccc;
+      font-size: 1.2em;
+      transition: background 0.3s;
+      -webkit-touch-callout: none; /* Android and iOS callouts*/
+        -webkit-user-select: none; /* Chrome, Safari, Opera */
+         -khtml-user-select: none; /* Konqueror */
+           -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE */
+                user-select: none;
+    }
+    h1:hover {
+      background: rgba(0,0,0,0.95);
+    }
+    h1 a {
+      display: inline-block;
+      padding: 12px 5px 15px 5px;
+      color: #ccc;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    h1 a:hover {
+      color: #fff;
+    }
+    h1 a:focus {
+      outline: none;
+      color: #9cc;
+    }
+
+
+    /* MAIN */
+    main {
+      position: absolute;
+      top:      3.5em;
+      left:     0.5em;
+      right:    0.5em;
+      bottom:   0.5em;
+    }
+
+
+    /* BUTTONS */
+    .btn.small,
+    .btn.small:hover:active {
+      display: inline-block;
+      padding: 0.2em 0.7em;
+      border-radius: 2px;
+      background-color: #448;
+      background: linear-gradient(0deg, #336, #669);
+      color: #ddd;
+      font-size: 0.7em;
+      font-weight: normal;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.3s;
+      -webkit-touch-callout: none; /* Android and iOS callouts*/
+        -webkit-user-select: none; /* Chrome, Safari, Opera */
+         -khtml-user-select: none; /* Konqueror */
+           -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE */
+                user-select: none;
+    }
+    .btn.small:hover {
+      background: linear-gradient(0deg, #119, #88d);
+      color: #fff;
+    }
+
+
+    /* ACE EDITORS */
+    main h4 {
+      margin: 0.3em 0.5em;
+    }
+    main h4 .btn {
+      float: right;
+    }
+    #grammar-wrap, #parser-wrap, #source-wrap, #compiled-wrap,
+    #grammar-ed  , #parser-ed  , #source-ed  , #compiled-ed {
+      position: absolute;
+    }
+    #grammar-wrap, #parser-wrap, #source-wrap, #compiled-wrap {
+      background-color: #ccc;
+    }
+    #grammar-ed  , #parser-ed  , #source-ed  , #compiled-ed {
+      margin:   0;
+      top:      2em;
+      left:     0;
+      right:    0;
+      bottom:   0;
+      font-size: 0.8em;
+    }
+    #grammar-wrap, #parser-wrap {
+      top:      0;
+      bottom:  50.5%;
+    }
+    #source-wrap, #compiled-wrap {
+      top:     50.5%;
+      bottom:   0;
+    }
+    #grammar-wrap, #source-wrap {
+      left:     0;
+      right:   50.5%;
+    }
+    #parser-wrap, #compiled-wrap {
+      left:    50.5%;
+      right:    0;
+    }
+
+    /*
+    #grammarEd:focus {
+      bottom:  30px;
+      height:  auto;
+      outline: none;
+      background-color: #dee;
+    }*/
+
+  </style>
+</head>
+<body style="background:#999;">
+  <h1>
+    <a href="../index.html" title="Pegdev Homepage">Pegdev</a> /
+    <a href="../index.html#/doc/usage" title="Pegdev Usage">Usage</a> /
+    <a href="01-basic-usage.html" title="Refresh this page">Basic Usage</a>
+  </h1>
+  <main>
+    <div id="grammar-wrap">
+      <h4>Grammar for PEG.js <a class="btn small" title="Or type [alt+return]">generate</a></h4>
+      <pre id="grammar-ed">start = ('a' / 'b')+;</pre>
+    </div>
+    <div id="parser-wrap">
+      <h4>Generated Parser</h4>
+      <pre id="parser-ed"></pre>
+    </div>
+    <div id="source-wrap">
+      <h4>Source Code <a class="btn small" title="Or type [alt+return]">compile</a></h4>
+      <pre id="source-ed">abcb</pre>
+    </div>
+    <div id="compiled-wrap">
+      <h4>Compiled Code</h4>
+      <pre id="compiled-ed"></pre>
+    </div>
+  </main>
+</body>
+</html>
