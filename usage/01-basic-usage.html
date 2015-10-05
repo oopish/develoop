@@ -4,7 +4,7 @@
   <title>Pegdev Basic Usage</title>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <script src="../build/pegdev.js"></script>
-  <script src="../node_modules/ace-editor-builds/src-noconflict/ace.js"></script>
+  <script src="../node_modules/ace-master-with-pegjs/build/src/ace.js"></script>
   <script>
     addEventListener('load', function () {
       var
@@ -59,7 +59,7 @@
 
 
       ////@!todo describe
-      grammarEd.session.setMode('ace/mode/javascript');
+      grammarEd.session.setMode('ace/mode/pegjs');
       parserEd.session.setMode('ace/mode/javascript');
       sourceEd.session.setMode('ace/mode/javascript');
       compiledEd.session.setMode('ace/mode/javascript');
