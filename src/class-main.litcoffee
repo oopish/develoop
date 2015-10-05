@@ -25,12 +25,16 @@ Xx. @todo describe
         @pegjs = PEG
 
 
-
-
 #### `pegRules <array of PegRules>`
 Xx. @todo describe
 
         @pegRules = []
+
+
+#### `pegRuleLut <object of PegRules>`
+Xx. @todo describe
+
+        @pegRuleLut = {}
 
 
 
@@ -54,16 +58,22 @@ Methods
 Xx. @todo describe
 
       init: ->
-        @pegRules.push new PegRule
-          label:       'all_a'
+        rule = new PegRule @,
+          label:       '_all_a'
           humanName:   'all "A" and "a"'
           initializer: 'var a = 1;'
-          rule:        "  = ('A' / 'a')+\n  / all_b"
-        @pegRules.push new PegRule
-          label:       'all_b'
+          rule:        "  = ('A' / 'a')+"
+          optionalOrs: ['_all_b']
+        @pegRules.push rule
+        @pegRuleLut[rule.label] = rule
+
+        rule = new PegRule @,
+          label:       '_all_b'
           humanName:   'all "B" and "b"'
           initializer: 'var b = 2;'
           rule:        "  = ('B' / 'b')+"
+        @pegRules.push rule
+        @pegRuleLut[rule.label] = rule
 
 
 

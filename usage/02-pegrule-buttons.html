@@ -21,8 +21,24 @@
 
 
         ////@!todo describe
-       ,pegdev = new Pegdev({
-        })
+       ,pegdev = (function () {
+          try {
+            var instance = new Pegdev
+          } catch (error) {
+            return {
+              render: function() { return '// Error: '+error; }
+             ,pegRules: []
+             ,pegjs: {
+                buildParser: function () {
+                  return {
+                    parse: function grammerError() { return '// (Grammar error)'; }
+                  }
+                } 
+              }
+            };
+          }
+          return instance;
+        })()
 
 
         ////@!todo describe
@@ -79,6 +95,13 @@
       parserEd.session.setMode('ace/mode/javascript');
       sourceEd.session.setMode('ace/mode/javascript');
       compiledEd.session.setMode('ace/mode/javascript');
+
+
+      //// Silence verbose ACE log messages - http://stackoverflow.com/a/28976811
+      grammarEd.$blockScrolling = Infinity;
+      parserEd.$blockScrolling = Infinity;
+      sourceEd.$blockScrolling = Infinity;
+      compiledEd.$blockScrolling = Infinity;
 
 
       ////@!todo describe
