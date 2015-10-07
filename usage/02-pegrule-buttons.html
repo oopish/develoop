@@ -14,10 +14,13 @@
 
 
         ////@!todo describe
-       ,grammarEd  = ace.edit('grammar-ed')
-       ,parserEd   = ace.edit('parser-ed')
-       ,sourceEd   = ace.edit('source-ed')
-       ,compiledEd = ace.edit('compiled-ed')
+       ,initializerEd = ace.edit('initializer-ed')
+       ,rulesEd       = ace.edit('rules-ed')
+       ,modeEd        = ace.edit('mode-ed')
+       ,parserEd      = ace.edit('parser-ed')
+       ,highlighterEd = ace.edit('highlighter-ed')
+       ,sourceEd      = ace.edit('source-ed')
+       ,compiledEd    = ace.edit('compiled-ed')
 
 
         ////@!todo describe
@@ -60,14 +63,30 @@
        ,parser
        ,parseGrammar = function () {
           try {
-            parser = pegdev.pegjs.buildParser( grammarEd.getValue() );
+            parser = pegdev.pegjs.buildParser(
+              initializerEd.getValue() + rulesEd.getValue()
+            );
             parserEd.setValue(''+parser.parse);
+            updateMode();
             compileSource();
           } catch(error) {
             parserEd.setValue(''+error);
           }
         }
 
+
+        //// Parses `modeEd` into a syntax-highlighter, and applies it to `sourceEd`. 
+       ,mode
+       ,updateMode = function () {
+          try {
+            mode = pegdev.aceGrammar.getMode( eval(modeEd.getValue()) ); //@todo without `eval()`?
+            sourceEd.getSession().setMode( mode );
+            console.log(mode);
+            highlighterEd.setValue(''+mode);
+          } catch(error) {
+            highlighterEd.setValue(''+error);
+          }
+        }
 
         ////@!todo describe
        ,compiled
@@ -84,29 +103,38 @@
 
 
       ////@!todo describe
-      grammarEd.setTheme('ace/theme/terminal');
-      parserEd.setTheme('ace/theme/solarized_dark');
+      initializerEd.setTheme('ace/theme/terminal');
+      rulesEd.setTheme('ace/theme/terminal');
+      modeEd.setTheme('ace/theme/tomorrow_night_blue');
+      parserEd.setTheme('ace/theme/terminal');
+      highlighterEd.setTheme('ace/theme/terminal');
       sourceEd.setTheme('ace/theme/iplastic');
       compiledEd.setTheme('ace/theme/solarized_light');
 
 
       ////@!todo describe
-      grammarEd.session.setMode('ace/mode/pegjs');
+      initializerEd.session.setMode('ace/mode/javascript');
+      rulesEd.session.setMode('ace/mode/pegjs');
+      modeEd.session.setMode('ace/mode/javascript');
       parserEd.session.setMode('ace/mode/javascript');
+      highlighterEd.session.setMode('ace/mode/javascript');
       sourceEd.session.setMode('ace/mode/javascript');
       compiledEd.session.setMode('ace/mode/javascript');
 
 
       //// Silence verbose ACE log messages - http://stackoverflow.com/a/28976811
-      grammarEd.$blockScrolling = Infinity;
+      initializerEd.$blockScrolling = Infinity;
+      rulesEd.$blockScrolling = Infinity;
+      modeEd.$blockScrolling = Infinity;
       parserEd.$blockScrolling = Infinity;
+      highlighterEd.$blockScrolling = Infinity;
       sourceEd.$blockScrolling = Infinity;
       compiledEd.$blockScrolling = Infinity;
 
 
       ////@!todo describe
-      $('#grammar-wrap h4 .btn').addEventListener('click', parseGrammar);
-      $('#grammar-ed').addEventListener('keypress', function(event) {
+      $('#rules-wrap h4 .btn').addEventListener('click', parseGrammar);
+      $('#rules-ed').addEventListener('keypress', function(event) {
         if (13 === event.keyCode && event.altKey) { event.preventDefault(); parseGrammar(); }
       });
 
@@ -122,7 +150,6 @@
           var
             pos = this.className.indexOf('inert')
            ,index = +this.id.split('-')[1]
-           ,grammar = []
           ;
           if (-1 == pos) {
             this.className += 'inert';
@@ -131,14 +158,18 @@
             this.className = this.className.slice(0, pos) + this.className.slice(pos+5);
             pegdev.pegRules[index].inert = false;
           }
-          grammarEd.setValue( pegdev.render() );
-          parseGrammar();          
+          initializerEd.setValue( pegdev.renderInitializer() );
+          rulesEd.setValue(       pegdev.renderRules()       );
+          modeEd.setValue(        pegdev.renderMode()        );
+          parseGrammar();
         });
       }
 
 
       ////@!todo describe
-      grammarEd.setValue( pegdev.render() );
+      initializerEd.setValue( pegdev.renderInitializer() );
+      rulesEd.setValue(       pegdev.renderRules()       );
+      modeEd.setValue(        pegdev.renderMode()        );
       parseGrammar();
 
     });
@@ -282,14 +313,12 @@
     main h4 .btn {
       float: right;
     }
-    #grammar-wrap, #parser-wrap, #source-wrap, #compiled-wrap,
-    #grammar-ed  , #parser-ed  , #source-ed  , #compiled-ed {
+    main >div { /* wraps */
       position: absolute;
-    }
-    #grammar-wrap, #parser-wrap, #source-wrap, #compiled-wrap {
       background-color: #ccc;
     }
-    #grammar-ed  , #parser-ed  , #source-ed  , #compiled-ed {
+    main pre { /* ace editors */
+      position: absolute!important;
       margin:    0;
       top:       2em;
       left:      0;
@@ -297,25 +326,37 @@
       bottom:    0;
       font-size: 0.8em;
     }
-    #grammar-wrap, #parser-wrap {
-      top:     10%;
-      bottom:  45.5%;
+    #initializer-wrap, #rules-wrap {
+      top:     3em;
+      bottom:  60%;
+    }
+    #mode-wrap {
+      top:     41%;
+      bottom:  26%;
+    }
+    #parser-wrap {
+      top:     41%;
+      bottom:  42%;
+    }
+    #highlighter-wrap {
+      top:     59%;
+      bottom:  26%;
     }
     #source-wrap, #compiled-wrap {
-      top:     55.5%;
-      bottom:   0;
+      top:     75%;
+      bottom:   0%;
     }
-    #grammar-wrap, #source-wrap {
+    #initializer-wrap, #mode-wrap, #source-wrap {
       left:     0;
       right:   50.5%;
     }
-    #parser-wrap, #compiled-wrap {
+    #rules-wrap, #highlighter-wrap, #parser-wrap, #compiled-wrap {
       left:    50.5%;
       right:    0;
     }
 
     /*
-    #grammarEd:focus {
+    #rulesEd:focus {
       bottom:  30px;
       height:  auto;
       outline: none;
@@ -334,13 +375,25 @@
     <ul id="pegrules-buttons">
       <!-- pegrules added by JS when the page loads -->
     </ul>
-    <div id="grammar-wrap">
-      <h4>Grammar for PEG.js <a class="btn small" title="Or type [alt+return]">generate</a></h4>
-      <pre id="grammar-ed"></pre>
+    <div id="initializer-wrap">
+      <h4>Initializer for PEG.js</h4>
+      <pre id="initializer-ed"></pre>
+    </div>
+    <div id="rules-wrap">
+      <h4>Rules for PEG.js <a class="btn small" title="Or type [alt+return]">generate</a></h4>
+      <pre id="rules-ed"></pre>
+    </div>
+    <div id="mode-wrap">
+      <h4>Highlight Definition</h4>
+      <pre id="mode-ed"></pre>
     </div>
     <div id="parser-wrap">
       <h4>Generated Parser</h4>
       <pre id="parser-ed"></pre>
+    </div>
+    <div id="highlighter-wrap">
+      <h4>Generated Highlighter</h4>
+      <pre id="highlighter-ed"></pre>
     </div>
     <div id="source-wrap">
       <h4>Source Code <a class="btn small" title="Or type [alt+return]">compile</a></h4>

@@ -99,20 +99,6 @@ Xx. @todo describe
 
 
 
-#### `getInitializer()`
-- `xx <xx>`  Xx 
-
-Xx. @todo describe
-
-      getInitializer: ->
-        if @inert
-          "// #{@label} '#{@humanName}' is inert\n"
-        else
-          "// #{@label} '#{@humanName}' initializer\n#{@initializer}\n;\n"
-
-
-
-
 #### `getActiveOrs()`
 - `<array of strings>`  Xx 
 
@@ -126,6 +112,20 @@ Xx. @todo describe
             Optional-or rule '#{optionalOr}' does not exist"
           unless rule.inert then out.push rule.label
         out
+
+
+
+
+#### `getInitializer()`
+- `xx <xx>`  Xx 
+
+Xx. @todo describe
+
+      getInitializer: ->
+        if @inert
+          "// #{@label} '#{@humanName}' is inert\n"
+        else
+          "// #{@label} '#{@humanName}' initializer\n#{@initializer}\n;\n"
 
 
 
@@ -147,6 +147,41 @@ Xx. @todo describe
           #{if activeOrs.length then ('  / ' + activeOrs.join '\n  / ') else ''}
           ;\n
           """
+
+
+
+
+#### `getModeStyles()`
+- `xx <xx>`  Xx 
+
+Xx. @todo describe
+
+      getModeStyles: ->
+        modeStyles = {}
+        modeStyles[@label] = 'comment'
+        return modeStyles
+
+
+
+
+#### `getModeLexes()`
+- `xx <xx>`  Xx 
+
+Xx. @todo describe
+
+      getModeLexes: ->
+        modeLexes = {}
+        modeLexes[@label] = """
+        {
+            type: "comment",
+            tokens: [
+                // block comments
+                // start,    end  delims
+                [ "<!--",    "-->" ]
+            ]
+          }
+        """
+        return modeLexes
 
 
 
