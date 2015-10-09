@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Pegdev GUI</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <script src="../build/pegdev.js"></script>
+  <script src="../node_modules/ace-master-with-pegjs/build/src/ace.js"></script>
+  <script>
+    addEventListener('load', function () {
+      var
+        //// Micro jQuery. 
+        $  = document.querySelector.bind(document)
+       ,$$ = document.querySelectorAll.bind(document)
+
+
+        ////@!todo describe
+       // ,editor = ace.edit('editor')
+
+
+        ////@!todo describe
+       ,pegdev = (function () {
+          try {
+            var instance = new Pegdev;
+          } catch (error) {
+            console.log (error);
+            instance = {};
+          }
+          return instance;
+        })()
+
+
+        ////@!todo describe
+       ,updateHelpers = function () {
+
+          ////@!todo describe
+          var out = ['<h4>Helpers</h4><ul>'];
+          for (var i=0, l=pegdev.helpers.length; i<l; i++) {
+            var helper = pegdev.helpers[i];
+            out.push('<li id="helper-' + i + '">' + helper.title + '</li>');
+          }
+          out.push('</ul>');
+          $('#helpers').innerHTML = out.join('\n');
+
+          ////@!todo describe
+          $('#helpers h4').addEventListener('click', function (event) {
+            event.stopPropagation();
+            this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+          }, true);
+
+          ////@!todo describe
+          var $$helpers = $$('#helpers li');
+          for (var i=0, l=$$helpers.length; i<l; i++) {
+            $$helpers[i].addEventListener('click', function (event) {
+              event.stopPropagation();
+              console.log(this.id);
+            }, true);
+          }
+        }
+
+
+        ////@!todo describe
+       ,updateLanguages = function () {
+
+          ////@!todo describe
+          var out = ['<h4>Languages</h4><ul>'];
+          for (var i=0, l=pegdev.languages.length; i<l; i++) {
+            var language = pegdev.languages[i];
+            out.push('<li id="language-' + i + '">');
+            out.push('  <h4>' + language.title + '</h4>');
+            out.push('  <ul>');
+            for (var i2=0, l2=language.features.length; i2<l2; i2++) {
+              var feature = language.features[i2];
+              out.push('    <li id="feature-' + i + '-' + i2 + '">' + feature.title + '</li>');
+            }
+            out.push('  </ul>');
+            out.push('</li>');
+          }
+          out.push('</ul>');
+          $('#languages').innerHTML = out.join('\n');
+
+          ////@!todo describe
+          $('#languages h4').addEventListener('click', function (event) {
+            event.stopPropagation();
+            this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+          }, true);
+
+          ////@!todo describe
+          var $$languages = $$('#languages ul h4');
+          for (var i=0, l=$$languages.length; i<l; i++) {
+            $$languages[i].addEventListener('click', function (event) {
+              this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+              event.stopPropagation();
+            }, true);
+          }
+
+          ////@!todo describe
+          for (var i=0, l=pegdev.languages.length; i<l; i++) {
+            var $$features = $$('#language-' + i + ' li');
+            for (var i2=0, l2=$$features.length; i2<l2; i2++) {
+              $$features[i2].addEventListener('click', function (event) {
+                event.stopPropagation();
+                console.log(this.id);
+              }, true);
+            }
+          }
+
+        }
+
+
+        ////@!todo describe
+       ,updateOopish = function () {
+
+          ////@!todo describe
+          var out = ['<h4>Oopish</h4><ul>'];
+          for (var i=0, l=pegdev.oopish.length; i<l; i++) {
+            var file = pegdev.oopish[i];
+            if ('File' == file.C) { // is a top-level file
+              out.push('<li id="oopish-' + i + '" class="file">');
+              out.push(file.title);
+            } else { // is a top-level directory
+              out.push('<li id="oopish-' + i + '">');
+              out.push('  <h4>' + file.title + '</h4>');
+              out.push('  <ul>');
+              for (var i2=0, l2=file.files.length; i2<l2; i2++) {
+                var subfile = file.files[i2];
+                out.push('    <li id="oopish-' + i + '-' + i2 + '">' + subfile.title + '</li>');
+              }
+              out.push('  </ul>');
+            }
+            out.push('</li>');
+          }
+          out.push('</ul>');
+          $('#oopish').innerHTML = out.join('\n');
+
+          ////@!todo describe
+          $('#oopish h4').addEventListener('click', function (event) {
+            event.stopPropagation();
+            this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+          }, true);
+
+          ////@!todo describe
+          var $$files = $$('#oopish ul h4');
+          for (var i=0, l=$$files.length; i<l; i++) {
+            $$files[i].addEventListener('click', function (event) {
+              this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+              event.stopPropagation();
+            }, true);
+          }
+
+          ////@!todo describe
+          for (var i=0, l=pegdev.oopish.length; i<l; i++) {
+            var $$features = $$('#oopish-' + i + ' li');
+            for (var i2=0, l2=$$features.length; i2<l2; i2++) {
+              $$features[i2].addEventListener('click', function (event) {
+                event.stopPropagation();
+                console.log(this.id);
+              }, true);
+            }
+          }
+
+          ////@!todo describe
+          var $$files = $$('#oopish >ul >li.file');
+          for (var i=0, l=$$files.length; i<l; i++) {
+            $$files[i].addEventListener('click', function (event) {
+              event.stopPropagation();
+              console.log(this.id);
+            }, true);
+          }
+
+        }
+
+
+        ////@!todo describe
+       ,updateFiles = function () {
+
+          ////@!todo describe
+          var out = ['<h4>MyProject</h4><ul>'];
+          for (var i=0, l=pegdev.files.length; i<l; i++) {
+            var file = pegdev.files[i];
+            if ('File' == file.C) { // is a top-level file
+              out.push('<li id="file-' + i + '" class="file">');
+              out.push(file.title);
+            } else { // is a top-level directory
+              out.push('<li id="file-' + i + '">');
+              out.push('  <h4>' + file.title + '</h4>');
+              out.push('  <ul>');
+              for (var i2=0, l2=file.files.length; i2<l2; i2++) {
+                var subfile = file.files[i2];
+                out.push('    <li id="file-' + i + '-' + i2 + '">' + subfile.title + '</li>');
+              }
+              out.push('  </ul>');
+            }
+            out.push('</li>');
+          }
+          out.push('</ul>');
+          $('#files').innerHTML = out.join('\n');
+
+          ////@!todo describe
+          $('#files h4').addEventListener('click', function (event) {
+            event.stopPropagation();
+            this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+          }, true);
+
+          ////@!todo describe
+          var $$files = $$('#files ul h4');
+          for (var i=0, l=$$files.length; i<l; i++) {
+            $$files[i].addEventListener('click', function (event) {
+              this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+              event.stopPropagation();
+            }, true);
+          }
+
+          ////@!todo describe
+          for (var i=0, l=pegdev.files.length; i<l; i++) {
+            var $$features = $$('#file-' + i + ' li');
+            for (var i2=0, l2=$$features.length; i2<l2; i2++) {
+              $$features[i2].addEventListener('click', function (event) {
+                event.stopPropagation();
+                console.log(this.id);
+              }, true);
+            }
+          }
+
+          ////@!todo describe
+          var $$files = $$('#files >ul >li.file');
+          for (var i=0, l=$$files.length; i<l; i++) {
+            $$files[i].addEventListener('click', function (event) {
+              event.stopPropagation();
+              console.log(this.id);
+            }, true);
+          }
+
+        }
+
+
+        ////@!todo describe
+       ,init = function () {
+          updateHelpers();
+          updateLanguages();
+          updateOopish();
+          updateFiles();
+        }
+      ;
+
+      //// Boot the app. 
+      init();
+
+    });
+  </script>
+  <style type="text/css" media="screen">
+
+    /* LAYOUT */
+    html, body {
+      margin: 0;
+      overflow: hidden;
+      background: #999;
+      font: 14px/1 "Arial", sans-serif;
+    }
+    @media screen and (min-width: 1265px) {
+      html, body { font-size: 15px; }
+    }
+    @media screen and (min-width: 1420px) {
+      html, body { font-size: 17px; }
+    }
+    @media screen and (min-width: 1580px) {
+      html, body { font-size: 19px; }
+    }
+    @media screen and (min-width: 1745px) {
+      html, body { font-size: 21px; }
+    }
+    @media screen and (min-width: 1910px) { /* 1080p */
+      html, body { font-size: 23px; }
+    }
+
+
+    /* HEADER */
+    h1 {
+      position: absolute;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0 15px 0 10px;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      background: rgba(16,16,16,0.9);
+      color: #ccc;
+      font-size: 1.2em;
+      transition: background 0.3s;
+      -webkit-touch-callout: none; /* Android and iOS callouts*/
+        -webkit-user-select: none; /* Chrome, Safari, Opera */
+         -khtml-user-select: none; /* Konqueror */
+           -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE */
+                user-select: none;
+    }
+    h1:hover {
+      background: rgba(0,0,0,0.95);
+    }
+    h1 a {
+      display: inline-block;
+      padding: 12px 5px 15px 5px;
+      color: #ccc;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    h1 a:hover {
+      color: #c6f;
+    }
+    h1 a:focus {
+      outline: none;
+      color: #9ac;
+    }
+
+
+    /* MAIN */
+    main {
+      position: absolute;
+      top:      3.5em;
+      left:     0.5em;
+      right:    0.5em;
+      bottom:   0.5em;
+    }
+
+
+    /* SECTIONS */
+    section {
+      display: inline-block;
+      width: 16em;
+      margin: 0 0.25em 0.5em 0.25em;
+      vertical-align: top;
+    }
+    h4 {
+      margin:         0;
+      padding:        0.5em;
+      border-radius:  4px 4px 0 0;
+      color:          #ccc;
+      background:     #333;
+      cursor:         pointer;
+      user-select:    none;
+    }
+    h4:hover {
+      color: #c6f;
+    }
+    h4:focus {
+      outline:        none;
+      color:          #9ac;
+    }
+    ul {
+      margin:         0;
+      padding:        0.5em;
+      border-radius:  0 0 4px 4px;
+      background:     #aaa;
+    }
+    li {
+      margin:         2px 0;
+      padding:        0;
+      border-radius:  2px;
+      list-style:     none;
+      cursor:         pointer;
+      user-select:    none;
+    }
+    li:focus {
+      outline:        none;
+    }
+    section.min >ul,
+    li.min ul {
+      height: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    h4, li {
+      -webkit-touch-callout: none; /* Android and iOS callouts*/
+        -webkit-user-select: none; /* Chrome, Safari, Opera */
+         -khtml-user-select: none; /* Konqueror */
+           -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE */
+                user-select: none;
+    }
+    section li ul {
+      background: #999;
+      margin-bottom: 0.25em;
+    }
+    #helpers   li,
+    #oopish li.file,
+    #oopish li li,
+    #files  li.file,
+    #files  li li,
+    section li li {
+      padding:    0.3em 0.5em;
+      background: #ccc;
+    }
+    #helpers   li:hover,
+    #files     li:hover,
+    #oopish    li:hover,
+    section li li:hover {
+      background: #c6f;
+    }
+    #helpers   li:focus,
+    #files     li:focus,
+    #oopish    li:focus,
+    section li li:focus {
+      background: #9ac;
+    }
+
+    #helpers, #languages {
+      float: left;
+    }
+
+    #oopish, #files {
+      float: right;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>
+    <a href="../index.html" title="Pegdev Homepage">Pegdev</a> /
+    <a href="../index.html#/doc/usage" title="Pegdev Usage">Usage</a> /
+    <a href="03-pegdev-gui.html" title="Refresh this page">Pegdev GUI</a>
+  </h1>
+  <main>
+    <section id="helpers"  ></section>
+    <section id="languages"></section>
+    <section id="files"    ></section>
+    <section id="oopish"   ></section>
+  </main>
+</body>
+</html>

@@ -1,16 +1,28 @@
-Rule
-====
+Feature
+=======
 
 @todo describe
 
 
-#### The main class for Pegdev Rules
+#### Defines a major feature of a Language
 
-    class Rule
-      C: 'Rule'
-      toString: -> '[object Rule]'
+    class Feature
+      C: 'Feature'
+      toString: -> "[object Feature]"
 
-      constructor: (config={}) ->
+      constructor: (@main, config={}) ->
+
+
+#### `label <string>`
+Xx. @todo describe
+
+        @label = config.label
+
+
+#### `title <string>`
+Xx. @todo describe
+
+        @title = config.title
 
 
 
@@ -64,3 +76,5 @@ Xx. @todo describe
 
 
 
+
+    ;
