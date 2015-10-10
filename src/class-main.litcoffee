@@ -49,10 +49,10 @@ The top level of the build and development utilities.
         @oopish = []
 
 
-#### `files <array of Directories and Files>`
+#### `project <array of Directories and Files>`
 The top level of the developer’s project. 
 
-        @files = []
+        @project = []
 
 
 
@@ -88,6 +88,18 @@ Xx. @todo describe
           notes: ['Adds 1 to a number']
           value: (x) -> x+1
 
+        @helpers.push new Helper @,
+          label: 'foo'
+          title: 'foo'
+          notes: ['Adds 1 to a number']
+          value: (x) -> 'foo'
+
+        @helpers.push new Helper @,
+          label: 'bar'
+          title: 'bar'
+          notes: ['Adds 1 to a number']
+          value: (x) -> 'bar'
+
         @languages.push new Language @,
           label: 'md'
           title: 'Markdown'
@@ -113,6 +125,11 @@ Xx. @todo describe
               label: 'b'
               title: 'B'
           ]
+
+
+
+
+##### Oopish compiler and highlighter
 
         @oopish.push new Directory @,
           label: 'build'
@@ -193,31 +210,6 @@ Xx. @todo describe
 
               """
           ]
-
-        @oopish.push new File @,
-          label: 'readme_md'
-          title: 'README.md'
-          notes: ['An introduction to Oopish']
-          raw: """
-            Oopish
-            ======
-
-            A little language which compiles to ES6. 
-
-            """
-
-        @oopish.push new File @,
-          label: 'package_json'
-          title: 'package.json'
-          notes: ['Metadata about Oopish, in standard NPM format']
-          raw: """
-            {
-              "name":        "oopish",
-              "version":     "0.0.1",
-              "description": "A little language which compiles to ES6",
-              "main":        "build/oopish-compiler.js"
-            }
-            """
 
         @oopish.push new Directory @,
           label: 'src'
@@ -310,15 +302,40 @@ Xx. @todo describe
               """
           ]
 
+        @oopish.push new File @,
+          label: 'readme_md'
+          title: 'README.md'
+          notes: ['An introduction to Oopish']
+          raw: """
+            Oopish
+            ======
+
+            A little language which compiles to ES6. 
+
+            """
+
+        @oopish.push new File @,
+          label: 'package_json'
+          title: 'package.json'
+          notes: ['Metadata about Oopish, in standard NPM format']
+          raw: """
+            {
+              "name":        "oopish",
+              "version":     "0.0.1",
+              "description": "A little language which compiles to ES6",
+              "main":        "build/oopish-compiler.js"
+            }
+            """
+
 
 
 
 ##### Example Project
 
-        @files.push new Directory @,
+        @project.push new Directory @,
           label: 'build'
           title: 'build'
-          notes: ['Destination for compiled files, so do not edit these files directly']
+          notes: ['Destination for compiled project files, so do not edit these files directly']
           files: [
             new File @,
               label: 'my_project_js'
@@ -365,7 +382,7 @@ Xx. @todo describe
               """
           ]
 
-        @files.push new Directory @,
+        @project.push new Directory @,
           label: 'doc'
           title: 'doc'
           notes: ['Project documentation, in Markdown format']
@@ -381,35 +398,10 @@ Xx. @todo describe
               """
           ]
 
-        @files.push new File @,
-          label: 'readme_md'
-          title: 'README.md'
-          notes: ['An introduction to the project']
-          raw: """
-            Example Project'
-            ===============
-
-            An example Pegdev project. 
-
-            """
-
-        @files.push new File @,
-          label: 'package_json'
-          title: 'package.json'
-          notes: ['Metadata about the project, in standard NPM format']
-          raw: """
-            {
-              "name":        "my-project",
-              "version":     "0.0.1",
-              "description": "An example Pegdev project",
-              "main":        "build/my-project.js"
-            }
-            """
-
-        @files.push new Directory @,
+        @project.push new Directory @,
           label: 'src'
           title: 'src'
-          notes: ['Uncompiled source files, in the order they should be concatenated']
+          notes: ['Uncompiled source project files, in the order they should be concatenated']
           files: [
             new File @,
               label: 'main_oopish_md'
@@ -438,7 +430,7 @@ Xx. @todo describe
               """
           ]
 
-        @files.push new Directory @,
+        @project.push new Directory @,
           label: 'test'
           title: 'test'
           notes: ['Source of project unit tests and performance benchmarks']
@@ -462,6 +454,31 @@ Xx. @todo describe
 
               """
           ]
+
+        @project.push new File @,
+          label: 'readme_md'
+          title: 'README.md'
+          notes: ['An introduction to the project']
+          raw: """
+            Example Project'
+            ===============
+
+            An example Pegdev project. 
+
+            """
+
+        @project.push new File @,
+          label: 'package_json'
+          title: 'package.json'
+          notes: ['Metadata about the project, in standard NPM format']
+          raw: """
+            {
+              "name":        "my-project",
+              "version":     "0.0.1",
+              "description": "An example Pegdev project",
+              "main":        "build/my-project.js"
+            }
+            """
 
 
 Functions

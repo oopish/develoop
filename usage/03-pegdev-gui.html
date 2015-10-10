@@ -14,10 +14,6 @@
 
 
         ////@!todo describe
-       // ,editor = ace.edit('editor')
-
-
-        ////@!todo describe
        ,pegdev = (function () {
           try {
             var instance = new Pegdev;
@@ -30,21 +26,41 @@
 
 
         ////@!todo describe
+       ,$edit = $('#edit')
+
+
+        ////@!todo describe
+       ,$info = $('#info')
+       ,updateInfo = function () {
+          $info.addEventListener('click', function (event) {
+            event.stopPropagation();
+            editor.setValue('');
+            $$tabs = $$('#tabs h3');
+            for (var i=0, l=$$tabs.length; i<l; i++) {
+              $$tabs[i].className = '';
+            }
+            $info.className = 'active';
+            $edit.className = 'info-is-active'
+          }, true);
+        }
+
+
+        ////@!todo describe
        ,updateHelpers = function () {
 
           ////@!todo describe
-          var out = ['<h4>Helpers</h4><ul>'];
+          var out = ['<h3>Helpers<i>&#x25CF;</i></h3><ul>'];
           for (var i=0, l=pegdev.helpers.length; i<l; i++) {
             var helper = pegdev.helpers[i];
-            out.push('<li id="helper-' + i + '">' + helper.title + '</li>');
+            out.push('<li id="helper-' + i + '" class="file">' + helper.title + '</li>');
           }
           out.push('</ul>');
           $('#helpers').innerHTML = out.join('\n');
 
           ////@!todo describe
-          $('#helpers h4').addEventListener('click', function (event) {
+          $('#helpers h3').addEventListener('click', function (event) {
             event.stopPropagation();
-            this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+            this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
           }, true);
 
           ////@!todo describe
@@ -52,7 +68,80 @@
           for (var i=0, l=$$helpers.length; i<l; i++) {
             $$helpers[i].addEventListener('click', function (event) {
               event.stopPropagation();
-              console.log(this.id);
+
+              //// Show the file content in the editor. 
+              var file = pegdev.helpers[ (this.id.split('-'))[1] ];
+              editor.setValue(''+file.value);
+              $edit.className = ''
+
+              //// If a tab for this file does not exist, create it. 
+              var $tab = $('#edit-' + this.id);
+              if (! $tab) {
+                $tab = document.createElement('h3');
+                $tab.id = 'edit-' + this.id;
+                $tab.innerHTML = '<span>' + file.title + '</span><i>&#x25CF;</i><em>&#x2716;</em>';
+                $('#tabs').appendChild($tab); // note no leading or trailing space
+
+                //// Add a click-handler to the tab. 
+                $('#edit-' + this.id).addEventListener('click', function (event) {
+                  event.stopPropagation();
+
+                  //// Deal with a click on the 'close' icon. 
+                  if ('EM' == event.target.tagName) {
+                    var className = this.className;
+                    var $previousTab = this.previousSibling;
+                    $('#tabs').removeChild(this);
+
+                    //// If the closed tab was active, activate the previous tab. 
+                    if ('active' == className) {
+
+                      //// Show info, or else show file content in the editor. 
+                      if ('info' == $previousTab.id) {
+                        editor.setValue('');
+                        $edit.className = 'info-is-active'
+                      } else {
+                        var file = pegdev.helpers[ ($previousTab.id.split('-'))[2] ];
+                        editor.setValue(''+file.value);
+                        $edit.className = ''
+                      }
+
+                      //// Highlight the tab. 
+                      $$tabs = $$('#tabs h3');
+                      for (var i=0, l=$$tabs.length; i<l; i++) {
+                        $$tabs[i].className = '';
+                      }
+                      $previousTab.className = 'active';
+
+                    }//if (active == className)
+
+                  //// Otherwise, just focus the tab. 
+                  } else {
+
+                    //// Show the file content in the editor. 
+                    var file = pegdev.helpers[ (this.id.split('-'))[2] ];
+                    editor.setValue(''+file.value);
+                    $edit.className = ''
+
+                    //// Highlight the tab. 
+                    $$tabs = $$('#tabs h3');
+                    for (var i=0, l=$$tabs.length; i<l; i++) {
+                      $$tabs[i].className = '';
+                    }
+                    $tab.className = 'active';
+
+                  }//if ('I' == event.target.tagName)
+
+                }, true);
+
+              }//if (! $tab)
+
+              //// Highlight the tab. 
+              $$tabs = $$('#tabs h3');
+              for (var i=0, l=$$tabs.length; i<l; i++) {
+                $$tabs[i].className = '';
+              }
+              $tab.className = 'active';
+              
             }, true);
           }
         }
@@ -62,7 +151,7 @@
        ,updateLanguages = function () {
 
           ////@!todo describe
-          var out = ['<h4>Languages</h4><ul>'];
+          var out = ['<h3>Languages<i>&#x25CF;</i></h3><ul>'];
           for (var i=0, l=pegdev.languages.length; i<l; i++) {
             var language = pegdev.languages[i];
             out.push('<li id="language-' + i + '">');
@@ -70,7 +159,7 @@
             out.push('  <ul>');
             for (var i2=0, l2=language.features.length; i2<l2; i2++) {
               var feature = language.features[i2];
-              out.push('    <li id="feature-' + i + '-' + i2 + '">' + feature.title + '</li>');
+              out.push('    <li id="feature-' + i + '-' + i2 + '" class="file">' + feature.title + '</li>');
             }
             out.push('  </ul>');
             out.push('</li>');
@@ -79,16 +168,16 @@
           $('#languages').innerHTML = out.join('\n');
 
           ////@!todo describe
-          $('#languages h4').addEventListener('click', function (event) {
+          $('#languages h3').addEventListener('click', function (event) {
             event.stopPropagation();
-            this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+            this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
           }, true);
 
           ////@!todo describe
           var $$languages = $$('#languages ul h4');
           for (var i=0, l=$$languages.length; i<l; i++) {
             $$languages[i].addEventListener('click', function (event) {
-              this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+              this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
               event.stopPropagation();
             }, true);
           }
@@ -111,19 +200,19 @@
        ,updateOopish = function () {
 
           ////@!todo describe
-          var out = ['<h4>Oopish</h4><ul>'];
+          var out = ['<h3>Oopish<i>&#x25CF;</i></h3><ul>'];
           for (var i=0, l=pegdev.oopish.length; i<l; i++) {
             var file = pegdev.oopish[i];
             if ('File' == file.C) { // is a top-level file
               out.push('<li id="oopish-' + i + '" class="file">');
               out.push(file.title);
             } else { // is a top-level directory
-              out.push('<li id="oopish-' + i + '">');
-              out.push('  <h4>' + file.title + '</h4>');
+              out.push('<li id="oopish-' + i + '" class="max">');
+              out.push('  <h4>' + file.title + '<i>&#x25CF;</i></h3></h4>');
               out.push('  <ul>');
               for (var i2=0, l2=file.files.length; i2<l2; i2++) {
                 var subfile = file.files[i2];
-                out.push('    <li id="oopish-' + i + '-' + i2 + '">' + subfile.title + '</li>');
+                out.push('    <li id="oopish-' + i + '-' + i2 + '" class="file">' + subfile.title + '</li>');
               }
               out.push('  </ul>');
             }
@@ -133,16 +222,16 @@
           $('#oopish').innerHTML = out.join('\n');
 
           ////@!todo describe
-          $('#oopish h4').addEventListener('click', function (event) {
+          $('#oopish h3').addEventListener('click', function (event) {
             event.stopPropagation();
-            this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+            this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
           }, true);
 
           ////@!todo describe
           var $$files = $$('#oopish ul h4');
           for (var i=0, l=$$files.length; i<l; i++) {
             $$files[i].addEventListener('click', function (event) {
-              this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+              this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
               event.stopPropagation();
             }, true);
           }
@@ -171,48 +260,48 @@
 
 
         ////@!todo describe
-       ,updateFiles = function () {
+       ,updateProject = function () {
 
           ////@!todo describe
-          var out = ['<h4>MyProject</h4><ul>'];
-          for (var i=0, l=pegdev.files.length; i<l; i++) {
-            var file = pegdev.files[i];
-            if ('File' == file.C) { // is a top-level file
-              out.push('<li id="file-' + i + '" class="file">');
-              out.push(file.title);
+          var out = ['<h3>MyProject<i>&#x25CF;</i></h3><ul>'];
+          for (var i=0, l=pegdev.project.length; i<l; i++) {
+            var project = pegdev.project[i];
+            if ('File' == project.C) { // is a top-level file
+              out.push('<li id="project-' + i + '" class="file">');
+              out.push(project.title);
             } else { // is a top-level directory
-              out.push('<li id="file-' + i + '">');
-              out.push('  <h4>' + file.title + '</h4>');
+              out.push('<li id="project-' + i + '">');
+              out.push('  <h4>' + project.title + '</h4>');
               out.push('  <ul>');
-              for (var i2=0, l2=file.files.length; i2<l2; i2++) {
-                var subfile = file.files[i2];
-                out.push('    <li id="file-' + i + '-' + i2 + '">' + subfile.title + '</li>');
+              for (var i2=0, l2=project.files.length; i2<l2; i2++) {
+                var subfile = project.files[i2];
+                out.push('    <li id="project-' + i + '-' + i2 + '" class="file">' + subfile.title + '</li>');
               }
               out.push('  </ul>');
             }
             out.push('</li>');
           }
           out.push('</ul>');
-          $('#files').innerHTML = out.join('\n');
+          $('#project').innerHTML = out.join('\n');
 
           ////@!todo describe
-          $('#files h4').addEventListener('click', function (event) {
+          $('#project h3').addEventListener('click', function (event) {
             event.stopPropagation();
-            this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+            this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
           }, true);
 
           ////@!todo describe
-          var $$files = $$('#files ul h4');
-          for (var i=0, l=$$files.length; i<l; i++) {
-            $$files[i].addEventListener('click', function (event) {
-              this.parentNode.className = this.parentNode.className == 'min' ? '' : 'min';
+          var $$project = $$('#project ul h4');
+          for (var i=0, l=$$project.length; i<l; i++) {
+            $$project[i].addEventListener('click', function (event) {
+              this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
               event.stopPropagation();
             }, true);
           }
 
           ////@!todo describe
-          for (var i=0, l=pegdev.files.length; i<l; i++) {
-            var $$features = $$('#file-' + i + ' li');
+          for (var i=0, l=pegdev.project.length; i<l; i++) {
+            var $$features = $$('#project-' + i + ' li');
             for (var i2=0, l2=$$features.length; i2<l2; i2++) {
               $$features[i2].addEventListener('click', function (event) {
                 event.stopPropagation();
@@ -222,9 +311,9 @@
           }
 
           ////@!todo describe
-          var $$files = $$('#files >ul >li.file');
-          for (var i=0, l=$$files.length; i<l; i++) {
-            $$files[i].addEventListener('click', function (event) {
+          var $$project = $$('#project >ul >li.file');
+          for (var i=0, l=$$project.length; i<l; i++) {
+            $$project[i].addEventListener('click', function (event) {
               event.stopPropagation();
               console.log(this.id);
             }, true);
@@ -235,15 +324,32 @@
 
         ////@!todo describe
        ,init = function () {
+          updateInfo();
           updateHelpers();
           updateLanguages();
           updateOopish();
-          updateFiles();
+          updateProject();
         }
+
+
+        ////@!todo describe
+       ,editor  = ace.edit('editor')
+       ,$editor = $('#editor')
       ;
+
 
       //// Boot the app. 
       init();
+
+
+      ////@!todo describe
+      editor.setTheme('ace/theme/monokai');
+      editor.session.setMode('ace/mode/javascript');
+      editor.$blockScrolling = Infinity;
+      editor.setOptions({
+        fontFamily: "monaco",
+        fontSize:   "1em"
+      });
 
     });
   </script>
@@ -251,40 +357,46 @@
 
     /* LAYOUT */
     html, body {
-      margin: 0;
-      overflow: hidden;
+      margin:     0;
+      overflow:   hidden;
       background: #999;
-      font: 14px/1 "Arial", sans-serif;
+      color:      #111;
+    }
+    html {
+      font-size: 62.5%; /* 1em = 10px */
+    }
+    body {
+      font: 1em/1 "Arial", sans-serif;
     }
     @media screen and (min-width: 1265px) {
-      html, body { font-size: 15px; }
+      body { font-size: 1.18em; }
     }
     @media screen and (min-width: 1420px) {
-      html, body { font-size: 17px; }
+      body { font-size: 1.334em; }
     }
     @media screen and (min-width: 1580px) {
-      html, body { font-size: 19px; }
+      body { font-size: 1.48em; }
     }
     @media screen and (min-width: 1745px) {
-      html, body { font-size: 21px; }
+      body { font-size: 1.65em; }
     }
     @media screen and (min-width: 1910px) { /* 1080p */
-      html, body { font-size: 23px; }
+      body { font-size: 1.8em; }
     }
 
 
-    /* HEADER */
-    h1 {
-      position: absolute;
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0 15px 0 10px;
-      width: 100%;
-      overflow: hidden;
-      white-space: nowrap;
-      background: rgba(16,16,16,0.9);
-      color: #ccc;
-      font-size: 1.2em;
+    /* LAYOUT: HEADER AND FOOTER */
+    header,
+    footer {
+      position:     absolute;
+      box-sizing:   border-box;
+      overflow:     hidden;
+      white-space:  nowrap;
+      width:      100%;
+      margin:       0;
+      padding:      0  0.5em;
+      line-height:  1;
+      background:   rgba(16,16,16,0.9);
       transition: background 0.3s;
       -webkit-touch-callout: none; /* Android and iOS callouts*/
         -webkit-user-select: none; /* Chrome, Safari, Opera */
@@ -293,57 +405,97 @@
             -ms-user-select: none; /* IE */
                 user-select: none;
     }
-    h1:hover {
-      background: rgba(0,0,0,0.95);
+    header {
+      height:      3em;
     }
-    h1 a {
-      display: inline-block;
-      padding: 12px 5px 15px 5px;
-      color: #ccc;
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-    h1 a:hover {
-      color: #c6f;
-    }
-    h1 a:focus {
-      outline: none;
-      color: #9ac;
+    footer {
+      height:      2em;
+      bottom:      0;
+      padding:     0  1.2em;
+      text-align:  right;
     }
 
 
-    /* MAIN */
+    /* LAYOUT: MAIN */
     main {
       position: absolute;
-      top:      3.5em;
-      left:     0.5em;
-      right:    0.5em;
-      bottom:   0.5em;
+      overflow: hidden;
+      top:      3em; /* header height */
+      left:     0;
+      right:    0;
+      bottom:   2em;
+      padding:  0.5em;
+    }
+
+
+    /* TYPOGRAPHY: HEADER AND FOOTER */
+    header a,
+    header span,
+    footer a {
+      display:         inline-block;
+      padding:         0.5em  0.25em;
+      color:           #bbb;
+      text-decoration: none;
+      transition:      color 0.3s;
+    }
+    header a,
+    header span {
+      font-weight: bold;
+      font-size:   1.5em;
     }
 
 
     /* SECTIONS */
     section {
       display: inline-block;
+      width: 16.5em;
+      vertical-align: top;
+    }
+    section.files-left {
+    }
+    section.files-right {
+    }
+
+
+    /* ARTICLES */
+    article {
+      display: inline-block;
       width: 16em;
       margin: 0 0.25em 0.5em 0.25em;
       vertical-align: top;
     }
-    h4 {
+    h3, h4, li {
+      -webkit-touch-callout: none; /* Android and iOS callouts*/
+        -webkit-user-select: none; /* Chrome, Safari, Opera */
+         -khtml-user-select: none; /* Konqueror */
+           -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE */
+                user-select: none;
+    }
+    h3, h4 {
       margin:         0;
       padding:        0.5em;
-      border-radius:  4px 4px 0 0;
-      color:          #ccc;
-      background:     #333;
+      border-radius:  4px;
+      color:          #bbb;
+      background:     rgba(16,16,16,0.9);
       cursor:         pointer;
       user-select:    none;
+      transition:     background 0.3s, color 0.3s;
     }
-    h4:hover {
-      color: #c6f;
+    #edit h3,
+    article.max h3,
+    li.max h4 {
+      border-radius:  4px 4px 0 0;
     }
-    h4:focus {
-      outline:        none;
-      color:          #9ac;
+    h3 i,
+    h3 em,
+    h4 i {
+      display: inline-block;
+      float: right;
+      margin-top:   -0.15em;
+      font-size:    1.2em;
+      font-weight:  normal;
+      font-style:   normal;
     }
     ul {
       margin:         0;
@@ -362,67 +514,233 @@
     li:focus {
       outline:        none;
     }
-    section.min >ul,
-    li.min ul {
-      height: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    h4, li {
-      -webkit-touch-callout: none; /* Android and iOS callouts*/
-        -webkit-user-select: none; /* Chrome, Safari, Opera */
-         -khtml-user-select: none; /* Konqueror */
-           -moz-user-select: none; /* Firefox */
-            -ms-user-select: none; /* IE */
-                user-select: none;
-    }
-    section li ul {
-      background: #999;
+    article li ul {
       margin-bottom: 0.25em;
+      background: #999;
     }
     #helpers   li,
-    #oopish li.file,
-    #oopish li li,
-    #files  li.file,
-    #files  li li,
-    section li li {
+    #oopish    li.file,
+    #oopish    li li,
+    #project   li.file,
+    #project   li li,
+    article li li {
       padding:    0.3em 0.5em;
       background: #ccc;
     }
-    #helpers   li:hover,
-    #files     li:hover,
-    #oopish    li:hover,
-    section li li:hover {
-      background: #c6f;
+
+
+    /* MIN */
+    article h4,
+    article ul,
+    article li li,
+    li ul,
+    li li {
+      transition: padding 0.15s, line-height 0.15s, font-size 0.15s, opacity 0.15s, background 0.15s, color 0.15s;
     }
-    #helpers   li:focus,
-    #files     li:focus,
-    #oopish    li:focus,
-    section li li:focus {
-      background: #9ac;
+    article.min h4,
+    article.min ul,
+    article.min li li,
+    li.min ul,
+    li.min li {
+      margin: 0;
+      padding: 0 0.5em!important;
+      line-height: 0;
+    }
+    article.min >ul,
+    li.min ul {
+      opacity: 0;
+    }
+    article.min >ul >li,
+    li.min li {
+      margin: 0;
+      font-size: 0;
     }
 
-    #helpers, #languages {
-      float: left;
+
+    /* EDITOR */
+    #edit {
+      position:   absolute;
+      left:       34.25em;
+      right:      0.5em;
+      width:      auto;
+      padding:    0;
+    }
+    #edit h3 {
+      display: inline-block;
+      margin: 0  4px  0.5em 0;
+      background: #aaa;
+      color: #333;
+      font-weight: normal;
+    }
+    #edit h3.active {
+      margin: 0  4px  0  0;
+      padding-bottom: 1em;
+      background: #eee;
+    }
+    #edit h3#info {
+      padding-left:  1em;
+      padding-right: 1em;
+      font-weight:   bold;
+      transition: background 0.15s;
+    }
+    #edit ul {
+      background:    #eee;
+      border-radius: 4px;
+    }
+    #edit.info-is-active ul {
+      border-radius: 0  4px  4px  4px;
+    }
+    #edit.info-is-active #editor {
+      z-index: -1;
+    }
+    #edit h3 span {
+      padding-right: 1em;
+    }
+    #edit h3#info span, /* info icon */
+    #edit h3 i,         /* identifier dot */
+    #edit h3 em {       /* close button */
+      padding:        0.03em  0.2em  0.04em  0.25em;
+    }
+    #edit h3#info {
+      height: 1.1em;
+    }
+    #edit h3 i {
+      font-size: 1.2em;
+    }
+    #edit h3 em {
+      margin-top:     -0.05em;
+      border-radius:  2em;
+      background:     #999;
+      color:          #eee;
+      font-size:      0;
+      transition:     background 0.3s, color 0.3s;
+    }
+    #edit h3.active i { /* identifier dot */
+      font-size: 0;
+    }
+    #edit h3.active em {
+      font-size: 1.2em;
+    }
+    pre { /* ace editors */
+      position:  relative!important;
+      width:        75%;
+      height:      200px;
+      /*
+      height:      20em;
+      top:          2.5em;
+      left:        34.25em;
+      font-size:    0.8em;
+      */
     }
 
-    #oopish, #files {
-      float: right;
+
+    /* INTERACTION AND COLOR */
+    #edit h3#info:hover {
+      background: #fc3;
+      cursor:     pointer;
+    }
+    #edit h3#info.active:hover {
+      background: #eee;
+      cursor:     default;
+    }
+    #edit h3:hover {
+      background: #ccc;
+    }
+    #edit h3.active:hover {
+      background: #eee;
+    }
+    #edit h3 em:hover {
+      background: #333;
+    }
+
+
+    header:hover,
+    footer:hover,
+    h3:hover {
+      background: rgba(0,0,0,0.95);
+    }
+    header a:focus,
+    footer a:focus,
+    h3:focus,
+    h4:focus,
+    li:focus {
+      outline: none;
+      color: #9ac;
+    }
+
+
+    /* INTERACTION AND COLOR: ARTICLES */
+    #edit h3[id^="edit-helper-"] em:hover,
+    #edit h3[id^="edit-helper-"] i,
+    #helpers:hover h3,
+    #helpers.max h3 i,
+    #helpers li:hover h4,
+    #helpers li.max h4 i {
+      color: #3ef;
+    }
+    #helpers li.file:hover {
+      background: #3ef;
+    }
+
+    #languages:hover h3,
+    #languages.max h3 i,
+    #languages li:hover h4,
+    #languages li.max h4 i {
+      color: #ef3;
+    }
+    #languages li.file:hover {
+      background: #ef3;
+    }
+
+    header a:hover,
+    footer a:hover,
+    #oopish:hover h3,
+    #oopish.max h3 i,
+    #oopish li:hover h4,
+    #oopish li.max h4 i {
+      color: #f3e;
+    }
+    #oopish li.file:hover {
+      background: #f3e;
+    }
+
+    #project:hover h3,
+    #project.max h3 i,
+    #project li:hover h4,
+    #project li.max h4 i {
+      color: #2f3;
+    }
+    #project li.file:hover {
+      background: #2f3;
     }
 
   </style>
 </head>
 <body>
-  <h1>
-    <a href="../index.html" title="Pegdev Homepage">Pegdev</a> /
-    <a href="../index.html#/doc/usage" title="Pegdev Usage">Usage</a> /
-    <a href="03-pegdev-gui.html" title="Refresh this page">Pegdev GUI</a>
-  </h1>
+  <header>
+    <a href="../index.html" title="Pegdev Homepage">Pegdev</a><span
+    >/</span><a href="../index.html#/doc/usage" title="Pegdev Usage">Usage</a><span
+    >/</span><a href="03-pegdev-gui.html" title="Refresh this page">Pegdev GUI</a>
+  </header>
   <main>
-    <section id="helpers"  ></section>
-    <section id="languages"></section>
-    <section id="files"    ></section>
-    <section id="oopish"   ></section>
+    <section>
+      <article id="helpers"   class="max"></article>
+      <article id="languages" class="max"></article>
+    </section>
+    <section>
+      <article id="oopish"    class="max"></article>
+      <article id="project"   class="max"></article>
+    </section>
+    <section id="edit" class="info-is-active">
+      <div id="tabs"><h3 id="info" class="active" title="Info"><span>?</span></h3></div>
+      <ul>
+        <li><pre id="editor"></pre></li>
+      </ul>
+      
+    </section>
   </main>
+  <footer>
+    <a href="http://oopish.com" title="Oopish Homepage">Oopish 2015</a>
+  </footer>
 </body>
 </html>
