@@ -14,23 +14,138 @@
 
 
         ////@!todo describe
+       ,$edit   = $('#edit')
+       ,$info   = $('#info')
+       ,editor  = ace.edit('editor')
+       ,$editor = $('#editor')
+
+
+        ////@!todo describe
        ,pegdev = (function () {
           try {
             var instance = new Pegdev;
           } catch (error) {
-            console.log (error);
+            console.log(error);
             instance = {};
           }
           return instance;
         })()
 
 
-        ////@!todo describe
-       ,$edit = $('#edit')
+        //// `activateTab()`
+        //// - `$tab <HTMLElement>`  the tab-element to activate
+        //// - `file <File>`         (optional) the File containing the content
+       ,activateTab = function ($tab, file) {
+
+          var
+            $$tabs, i, l, content
+           ,id = $tab.id
+          ;
+
+          //// Deactivate all tabs. 
+          $$tabs = $$('#tabs h3');
+          for (i=0, l=$$tabs.length; i<l; i++) {
+            $$tabs[i].className = '';
+          }
+
+          //// Activate the given tab. 
+          $tab.className = 'active';
+
+          //// Deal with the special '#info' tab. 
+          if ('info' == id) {
+            $edit.className = 'info-is-active';
+            content = '';
+
+          //// Otherwise, retrieve file content. 
+          } else {
+            $edit.className = '';
+            content = ''+file.value;
+          }
+
+          //// Update ACE. 
+          editor.setValue(content);
+        }
+
+
+        //// `liIdToFile()`
+        //// - `id <string>`  the ID attribute of a `<LI>` element
+        //// 
+        //// Retrieves a reference to a File instance. 
+       ,liIdToFile = function (id) {   // eg 'project-2-0'
+          var article, index, file
+             ,idParts = id.split('-')  // eg `['project','2','0']`
+          ;
+          article = idParts[0];        // eg 'project'
+          index   = idParts[1];        // eg '2'
+          file = pegdev[article][+index]; // eg `pegdev.project[2]`
+          if ('Directory' == file.C) {
+            index = idParts[2];        // eg '0'
+            file = file.files[+index]; // eg `pegdev.project.files[2].files[0]`
+          }
+          return file;
+        }
+
+
+        //// `tabIdToFile()`
+        //// - `id <string>`  the ID attribute of a tab-element
+        //// 
+        //// Retrieves a reference to a File instance. 
+       ,tabIdToFile = function (id) {  // eg 'project-2-0'
+          var article, index, file
+             ,idParts = id.split('-')  // eg `['edit-','project','2','0']`
+          ;
+          article = idParts[1];        // eg 'project'
+          index   = idParts[2];        // eg '2'
+          file = pegdev[article][+index]; // eg `pegdev.project[2]`
+          if ('Directory' == file.C) {
+            index = idParts[3];        // eg '0'
+            file = file.files[+index]; // eg `pegdev.project.files[2].files[0]`
+          }
+          return file;
+        }
+
+
+        //// `createTab()`
+        //// - `id <string>`  the ID attribute of a `<LI>` element
+        //// - `file <File>`  reference to a File instance
+        //// 
+        //// Appends a new tab to the '#tabs' element. 
+       ,createTab = function (id, file) {  // eg 'project-2-0'
+          var $tab = document.createElement('h3');
+          $tab.id = 'edit-' + id;
+          $tab.innerHTML = '<span>' + file.title + '</span><i>&#x25CF;</i><em>&#x2716;</em>';
+          $('#tabs').appendChild($tab); // note no leading or trailing space
+
+          //// Add a click-handler to the tab. 
+          $tab.addEventListener('click', function (event) {
+            event.stopPropagation();
+
+            //// Deal with a click on the 'close' icon. 
+            if ('EM' == event.target.tagName) {
+              var $previousTab = this.previousSibling;
+              $('#tabs').removeChild(this);
+
+              //// If the closed tab was active, activate the previous tab. 
+              if ('active' == this.className) {
+                if ('info' == $previousTab.id) {
+                  activateTab($previousTab);
+                } else {
+                  activateTab( $previousTab, tabIdToFile($previousTab.id) );
+                }
+              }
+
+            //// Otherwise, just activate the tab. 
+            } else {
+              activateTab( this, tabIdToFile(this.id) );
+            }
+
+          }, true);
+
+          return $tab;
+        }
 
 
         ////@!todo describe
-       ,$info = $('#info')
        ,updateInfo = function () {
           $info.addEventListener('click', function (event) {
             event.stopPropagation();
@@ -45,304 +160,89 @@
         }
 
 
-        ////@!todo describe
-       ,updateHelpers = function () {
+        //// `updateArticle()`
+        //// - `title <string>                  `  display-name for the article
+        //// - `source <array of File|Directory>`  article files and directories
+       ,updateArticle = function (title, identifier, source) {
+          var out, i, l, i2, l2, file, subfile, $$dirs, $$files;
 
-          ////@!todo describe
-          var out = ['<h3>Helpers<i>&#x25CF;</i></h3><ul>'];
-          for (var i=0, l=pegdev.helpers.length; i<l; i++) {
-            var helper = pegdev.helpers[i];
-            out.push('<li id="helper-' + i + '" class="file">' + helper.title + '</li>');
-          }
-          out.push('</ul>');
-          $('#helpers').innerHTML = out.join('\n');
-
-          ////@!todo describe
-          $('#helpers h3').addEventListener('click', function (event) {
-            event.stopPropagation();
-            this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
-          }, true);
-
-          ////@!todo describe
-          var $$helpers = $$('#helpers li');
-          for (var i=0, l=$$helpers.length; i<l; i++) {
-            $$helpers[i].addEventListener('click', function (event) {
-              event.stopPropagation();
-
-              //// Show the file content in the editor. 
-              var file = pegdev.helpers[ (this.id.split('-'))[1] ];
-              editor.setValue(''+file.value);
-              $edit.className = ''
-
-              //// If a tab for this file does not exist, create it. 
-              var $tab = $('#edit-' + this.id);
-              if (! $tab) {
-                $tab = document.createElement('h3');
-                $tab.id = 'edit-' + this.id;
-                $tab.innerHTML = '<span>' + file.title + '</span><i>&#x25CF;</i><em>&#x2716;</em>';
-                $('#tabs').appendChild($tab); // note no leading or trailing space
-
-                //// Add a click-handler to the tab. 
-                $('#edit-' + this.id).addEventListener('click', function (event) {
-                  event.stopPropagation();
-
-                  //// Deal with a click on the 'close' icon. 
-                  if ('EM' == event.target.tagName) {
-                    var className = this.className;
-                    var $previousTab = this.previousSibling;
-                    $('#tabs').removeChild(this);
-
-                    //// If the closed tab was active, activate the previous tab. 
-                    if ('active' == className) {
-
-                      //// Show info, or else show file content in the editor. 
-                      if ('info' == $previousTab.id) {
-                        editor.setValue('');
-                        $edit.className = 'info-is-active'
-                      } else {
-                        var file = pegdev.helpers[ ($previousTab.id.split('-'))[2] ];
-                        editor.setValue(''+file.value);
-                        $edit.className = ''
-                      }
-
-                      //// Highlight the tab. 
-                      $$tabs = $$('#tabs h3');
-                      for (var i=0, l=$$tabs.length; i<l; i++) {
-                        $$tabs[i].className = '';
-                      }
-                      $previousTab.className = 'active';
-
-                    }//if (active == className)
-
-                  //// Otherwise, just focus the tab. 
-                  } else {
-
-                    //// Show the file content in the editor. 
-                    var file = pegdev.helpers[ (this.id.split('-'))[2] ];
-                    editor.setValue(''+file.value);
-                    $edit.className = ''
-
-                    //// Highlight the tab. 
-                    $$tabs = $$('#tabs h3');
-                    for (var i=0, l=$$tabs.length; i<l; i++) {
-                      $$tabs[i].className = '';
-                    }
-                    $tab.className = 'active';
-
-                  }//if ('I' == event.target.tagName)
-
-                }, true);
-
-              }//if (! $tab)
-
-              //// Highlight the tab. 
-              $$tabs = $$('#tabs h3');
-              for (var i=0, l=$$tabs.length; i<l; i++) {
-                $$tabs[i].className = '';
-              }
-              $tab.className = 'active';
-              
-            }, true);
-          }
-        }
-
-
-        ////@!todo describe
-       ,updateLanguages = function () {
-
-          ////@!todo describe
-          var out = ['<h3>Languages<i>&#x25CF;</i></h3><ul>'];
-          for (var i=0, l=pegdev.languages.length; i<l; i++) {
-            var language = pegdev.languages[i];
-            out.push('<li id="language-' + i + '">');
-            out.push('  <h4>' + language.title + '</h4>');
-            out.push('  <ul>');
-            for (var i2=0, l2=language.features.length; i2<l2; i2++) {
-              var feature = language.features[i2];
-              out.push('    <li id="feature-' + i + '-' + i2 + '" class="file">' + feature.title + '</li>');
-            }
-            out.push('  </ul>');
-            out.push('</li>');
-          }
-          out.push('</ul>');
-          $('#languages').innerHTML = out.join('\n');
-
-          ////@!todo describe
-          $('#languages h3').addEventListener('click', function (event) {
-            event.stopPropagation();
-            this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
-          }, true);
-
-          ////@!todo describe
-          var $$languages = $$('#languages ul h4');
-          for (var i=0, l=$$languages.length; i<l; i++) {
-            $$languages[i].addEventListener('click', function (event) {
-              this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
-              event.stopPropagation();
-            }, true);
-          }
-
-          ////@!todo describe
-          for (var i=0, l=pegdev.languages.length; i<l; i++) {
-            var $$features = $$('#language-' + i + ' li');
-            for (var i2=0, l2=$$features.length; i2<l2; i2++) {
-              $$features[i2].addEventListener('click', function (event) {
-                event.stopPropagation();
-                console.log(this.id);
-              }, true);
-            }
-          }
-
-        }
-
-
-        ////@!todo describe
-       ,updateOopish = function () {
-
-          ////@!todo describe
-          var out = ['<h3>Oopish<i>&#x25CF;</i></h3><ul>'];
-          for (var i=0, l=pegdev.oopish.length; i<l; i++) {
-            var file = pegdev.oopish[i];
+          //// Generate the HTML, and replace any previously-existing HTML. 
+          out = ['<h3>' + title + '<i>&#x25CF;</i></h3><ul>'];
+          for (i=0, l=source.length; i<l; i++) {
+            file = source[i];
             if ('File' == file.C) { // is a top-level file
-              out.push('<li id="oopish-' + i + '" class="file">');
+              out.push('<li id="' + identifier + '-' + i + '" class="file">');
               out.push(file.title);
             } else { // is a top-level directory
-              out.push('<li id="oopish-' + i + '" class="max">');
+              out.push('<li id="' + identifier + '-' + i + '" class="max">');
               out.push('  <h4>' + file.title + '<i>&#x25CF;</i></h3></h4>');
               out.push('  <ul>');
-              for (var i2=0, l2=file.files.length; i2<l2; i2++) {
-                var subfile = file.files[i2];
-                out.push('    <li id="oopish-' + i + '-' + i2 + '" class="file">' + subfile.title + '</li>');
+              for (i2=0, l2=file.files.length; i2<l2; i2++) {
+                subfile = file.files[i2];
+                out.push('    <li id="' + identifier + '-' + i + '-' + i2 + '" '
+                  + 'class="file">' + subfile.title + '</li>'
+                );
               }
               out.push('  </ul>');
             }
             out.push('</li>');
           }
           out.push('</ul>');
-          $('#oopish').innerHTML = out.join('\n');
+          $('#' + identifier).innerHTML = out.join('\n');
 
-          ////@!todo describe
-          $('#oopish h3').addEventListener('click', function (event) {
+          //// Min/max the article when its title is clicked. 
+          $('#' + identifier + ' h3').addEventListener('click', function (event) {
             event.stopPropagation();
             this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
           }, true);
 
-          ////@!todo describe
-          var $$files = $$('#oopish ul h4');
-          for (var i=0, l=$$files.length; i<l; i++) {
-            $$files[i].addEventListener('click', function (event) {
-              this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
+          //// Min/max Directories when their titles are clicked. 
+          $$dirs = $$('#' + identifier + ' ul h4');
+          for (i=0, l=$$dirs.length; i<l; i++) {
+            $$dirs[i].addEventListener('click', function (event) {
               event.stopPropagation();
+              this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
             }, true);
           }
 
-          ////@!todo describe
-          for (var i=0, l=pegdev.oopish.length; i<l; i++) {
-            var $$features = $$('#oopish-' + i + ' li');
-            for (var i2=0, l2=$$features.length; i2<l2; i2++) {
-              $$features[i2].addEventListener('click', function (event) {
+          //// Open Files when their titles are clicked. 
+          $$files = $$('#' + identifier + ' li');
+          for (i=0, l=$$files.length; i<l; i++) {
+            if ('file' == $$files[i].className) {
+              $$files[i].addEventListener('click', function (event) {
+                var file, $tab, id = this.id;
                 event.stopPropagation();
-                console.log(this.id);
+
+                //// Get a reference to the File instance, and the tab element if it exists. 
+                file = liIdToFile(id);
+                $tab = $('#edit-' + id);
+
+                //// If a tab for this file does not exist, create it. 
+                if (! $tab) { $tab = createTab(id, file); }
+
+                //// Highlight the tab, and fill `editor` with its content. 
+                activateTab($tab, file);
+                
               }, true);
             }
           }
 
-          ////@!todo describe
-          var $$files = $$('#oopish >ul >li.file');
-          for (var i=0, l=$$files.length; i<l; i++) {
-            $$files[i].addEventListener('click', function (event) {
-              event.stopPropagation();
-              console.log(this.id);
-            }, true);
-          }
-
-        }
-
-
-        ////@!todo describe
-       ,updateProject = function () {
-
-          ////@!todo describe
-          var out = ['<h3>MyProject<i>&#x25CF;</i></h3><ul>'];
-          for (var i=0, l=pegdev.project.length; i<l; i++) {
-            var project = pegdev.project[i];
-            if ('File' == project.C) { // is a top-level file
-              out.push('<li id="project-' + i + '" class="file">');
-              out.push(project.title);
-            } else { // is a top-level directory
-              out.push('<li id="project-' + i + '">');
-              out.push('  <h4>' + project.title + '</h4>');
-              out.push('  <ul>');
-              for (var i2=0, l2=project.files.length; i2<l2; i2++) {
-                var subfile = project.files[i2];
-                out.push('    <li id="project-' + i + '-' + i2 + '" class="file">' + subfile.title + '</li>');
-              }
-              out.push('  </ul>');
-            }
-            out.push('</li>');
-          }
-          out.push('</ul>');
-          $('#project').innerHTML = out.join('\n');
-
-          ////@!todo describe
-          $('#project h3').addEventListener('click', function (event) {
-            event.stopPropagation();
-            this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
-          }, true);
-
-          ////@!todo describe
-          var $$project = $$('#project ul h4');
-          for (var i=0, l=$$project.length; i<l; i++) {
-            $$project[i].addEventListener('click', function (event) {
-              this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
-              event.stopPropagation();
-            }, true);
-          }
-
-          ////@!todo describe
-          for (var i=0, l=pegdev.project.length; i<l; i++) {
-            var $$features = $$('#project-' + i + ' li');
-            for (var i2=0, l2=$$features.length; i2<l2; i2++) {
-              $$features[i2].addEventListener('click', function (event) {
-                event.stopPropagation();
-                console.log(this.id);
-              }, true);
-            }
-          }
-
-          ////@!todo describe
-          var $$project = $$('#project >ul >li.file');
-          for (var i=0, l=$$project.length; i<l; i++) {
-            $$project[i].addEventListener('click', function (event) {
-              event.stopPropagation();
-              console.log(this.id);
-            }, true);
-          }
-
-        }
-
-
-        ////@!todo describe
-       ,init = function () {
-          updateInfo();
-          updateHelpers();
-          updateLanguages();
-          updateOopish();
-          updateProject();
-        }
-
-
-        ////@!todo describe
-       ,editor  = ace.edit('editor')
-       ,$editor = $('#editor')
+        }//updateArticle()
       ;
 
 
-      //// Boot the app. 
-      init();
+      //// Initialize articles. 
+      updateArticle('Helpers'  , 'helpers'  , pegdev.helpers  );
+      updateArticle('Languages', 'languages', pegdev.languages);
+      updateArticle('Oopish'   , 'oopish'   , pegdev.oopish   );
+      updateArticle('Project'  , 'project'  , pegdev.project  );
 
 
-      ////@!todo describe
+      //// Initialize tabs. @todo more init tabs?
+      updateInfo();
+
+
+      //// Configure ACE. 
       editor.setTheme('ace/theme/monokai');
       editor.session.setMode('ace/mode/javascript');
       editor.$blockScrolling = Infinity;
@@ -670,8 +570,8 @@
 
 
     /* INTERACTION AND COLOR: ARTICLES */
-    #edit h3[id^="edit-helper-"] em:hover,
-    #edit h3[id^="edit-helper-"] i,
+    #edit h3[id^="edit-helpers-"] em:hover,
+    #edit h3[id^="edit-helpers-"] i,
     #helpers:hover h3,
     #helpers.max h3 i,
     #helpers li:hover h4,
@@ -682,6 +582,8 @@
       background: #3ef;
     }
 
+    #edit h3[id^="edit-languages-"] em:hover,
+    #edit h3[id^="edit-languages-"] i,
     #languages:hover h3,
     #languages.max h3 i,
     #languages li:hover h4,
@@ -694,6 +596,8 @@
 
     header a:hover,
     footer a:hover,
+    #edit h3[id^="edit-oopish-"] em:hover,
+    #edit h3[id^="edit-oopish-"] i,
     #oopish:hover h3,
     #oopish.max h3 i,
     #oopish li:hover h4,
@@ -704,6 +608,8 @@
       background: #f3e;
     }
 
+    #edit h3[id^="edit-project-"] em:hover,
+    #edit h3[id^="edit-project-"] i,
     #project:hover h3,
     #project.max h3 i,
     #project li:hover h4,

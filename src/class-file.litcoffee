@@ -31,10 +31,10 @@ Xx. @todo describe
         @notes = config.notes
 
 
-#### `raw <string>`
-The literal content of the file, usually a multiline string. 
+#### `value <any>` (optional)
+The content of the file, usually a multiline string. 
 
-        @raw = config.raw
+        @value = config.value
 
 
 
