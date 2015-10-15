@@ -1,1 +1,1 @@
-console.log( require('../build/test/pegdev-with-test').runTest() );
+console.log( require('../build/test/develoop-with-test') );

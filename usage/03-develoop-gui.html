@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Pegdev GUI</title>
+  <title>Develoop GUI</title>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-  <script src="../build/pegdev.js"></script>
+  <script src="../build/develoop.js"></script>
   <script src="../node_modules/ace-master-with-pegjs/build/src/ace.js"></script>
   <script>
     addEventListener('load', function () {
@@ -14,16 +14,21 @@
 
 
         ////@!todo describe
-       ,$edit   = $('#edit')
        ,$info   = $('#info')
-       ,editor  = ace.edit('editor')
+       ,$edit   = $('#edit')
        ,$editor = $('#editor')
+       ,editor  = ace.edit('editor')
+
+       ,$log    = $('#log')
+       ,$read   = $('#read')
+       ,$reader = $('#reader')
+       ,reader  = ace.edit('reader')
 
 
         ////@!todo describe
-       ,pegdev = (function () {
+       ,develoop = (function () {
           try {
-            var instance = new Pegdev;
+            var instance = new Develoop;
           } catch (error) {
             console.log(error);
             instance = {};
@@ -38,12 +43,20 @@
        ,activateTab = function ($tab, file) {
 
           var
-            $$tabs, i, l, content
+            $$tabs, i, l, ext
            ,id = $tab.id
+           ,idPrefix = id.slice(0, 5) // 'edit-' or 'read-'
+           ,modes = {
+              js:        'javascript'
+             ,json:      'json'
+             ,litcoffee: 'markdown'
+             ,md:        'markdown'
+             ,pegjs:     'pegjs'
+            }
           ;
 
           //// Deactivate all tabs. 
-          $$tabs = $$('#tabs h3');
+          $$tabs = $$('#' + idPrefix + 'tabs h3');
           for (i=0, l=$$tabs.length; i<l; i++) {
             $$tabs[i].className = '';
           }
@@ -51,19 +64,34 @@
           //// Activate the given tab. 
           $tab.className = 'active';
 
-          //// Deal with the special '#info' tab. 
+          //// Deal with the special '#info' and '#log' tabs. 
           if ('info' == id) {
             $edit.className = 'info-is-active';
-            content = '';
+            editor.setValue('');
+          } else if ('log' == id) {
+            $read.className = 'log-is-active';
+            reader.setValue('');
 
-          //// Otherwise, retrieve file content. 
-          } else {
+          //// Otherwise, display file content with proper highlighting. 
+          } else if ('edit-' == idPrefix) {
             $edit.className = '';
-            content = ''+file.value;
+            ext = file.label.split('.').pop();
+            if (modes[ext]) {
+              editor.session.setMode('ace/mode/' + modes[ext]);
+            } else {
+              editor.session.setMode('ace/mode/text');
+            }
+            editor.setValue(''+file.value);
+          } else {
+            $read.className = '';
+            ext = file.label.split('.').pop();
+            if (modes[ext]) {
+              reader.session.setMode('ace/mode/' + modes[ext]);
+            } else {
+              reader.session.setMode('ace/mode/text');
+            }
+            reader.setValue(''+file.value);
           }
-
-          //// Update ACE. 
-          editor.setValue(content);
         }
 
 
@@ -77,10 +105,10 @@
           ;
           article = idParts[0];        // eg 'project'
           index   = idParts[1];        // eg '2'
-          file = pegdev[article][+index]; // eg `pegdev.project[2]`
+          file = develoop[article][+index]; // eg `develoop.project[2]`
           if ('Directory' == file.C) {
             index = idParts[2];        // eg '0'
-            file = file.files[+index]; // eg `pegdev.project.files[2].files[0]`
+            file = file.files[+index]; // eg `develoop.project.files[2].files[0]`
           }
           return file;
         }
@@ -90,31 +118,31 @@
         //// - `id <string>`  the ID attribute of a tab-element
         //// 
         //// Retrieves a reference to a File instance. 
-       ,tabIdToFile = function (id) {  // eg 'project-2-0'
+       ,tabIdToFile = function (id) {  // eg 'edit-project-2-0'
           var article, index, file
-             ,idParts = id.split('-')  // eg `['edit-','project','2','0']`
+             ,idParts = id.split('-')  // eg `['edit','project','2','0']`
           ;
           article = idParts[1];        // eg 'project'
           index   = idParts[2];        // eg '2'
-          file = pegdev[article][+index]; // eg `pegdev.project[2]`
+          file = develoop[article][+index]; // eg `develoop.project[2]`
           if ('Directory' == file.C) {
             index = idParts[3];        // eg '0'
-            file = file.files[+index]; // eg `pegdev.project.files[2].files[0]`
+            file = file.files[+index]; // eg `develoop.project.files[2].files[0]`
           }
           return file;
         }
 
 
-        //// `createTab()`
+        //// `addTab()`
         //// - `id <string>`  the ID attribute of a `<LI>` element
         //// - `file <File>`  reference to a File instance
         //// 
-        //// Appends a new tab to the '#tabs' element. 
-       ,createTab = function (id, file) {  // eg 'project-2-0'
+        //// Appends a new tab to the '#edit-tabs' or '#read-tabs' element. 
+       ,addTab = function (id, file) { // eg 'project-2-0'
           var $tab = document.createElement('h3');
-          $tab.id = 'edit-' + id;
-          $tab.innerHTML = '<span>' + file.title + '</span><i>&#x25CF;</i><em>&#x2716;</em>';
-          $('#tabs').appendChild($tab); // note no leading or trailing space
+          $tab.id = (file.write ? 'edit-' : 'read-') + id;
+          $tab.innerHTML = '<span>' + file.label + '</span><i>&#x25CF;</i><em>&#x2716;</em>';
+          $( '#' + (file.write ? 'edit' : 'read') + '-tabs' ).appendChild($tab); // note no leading or trailing space
 
           //// Add a click-handler to the tab. 
           $tab.addEventListener('click', function (event) {
@@ -123,11 +151,12 @@
             //// Deal with a click on the 'close' icon. 
             if ('EM' == event.target.tagName) {
               var $previousTab = this.previousSibling;
-              $('#tabs').removeChild(this);
+              var idPrefix = event.target.parentNode.id.slice(0, 5); // 'edit-' or 'read-'
+              $('#' + idPrefix + 'tabs').removeChild(this);
 
               //// If the closed tab was active, activate the previous tab. 
               if ('active' == this.className) {
-                if ('info' == $previousTab.id) {
+                if ('info' == $previousTab.id || 'log' == $previousTab.id) {
                   activateTab($previousTab);
                 } else {
                   activateTab( $previousTab, tabIdToFile($previousTab.id) );
@@ -150,7 +179,7 @@
           $info.addEventListener('click', function (event) {
             event.stopPropagation();
             editor.setValue('');
-            $$tabs = $$('#tabs h3');
+            $$tabs = $$('#edit-tabs h3');
             for (var i=0, l=$$tabs.length; i<l; i++) {
               $$tabs[i].className = '';
             }
@@ -160,27 +189,53 @@
         }
 
 
+        ////@!todo describe
+       ,updateLog = function () {
+          $log.addEventListener('click', function (event) {
+            event.stopPropagation();
+            reader.setValue('log here @todo');
+            $$tabs = $$('#read-tabs h3');
+            for (var i=0, l=$$tabs.length; i<l; i++) {
+              $$tabs[i].className = '';
+            }
+            $log.className = 'active';
+            $read.className = 'log-is-active'
+          }, true);
+        }
+
+
+        ////@!todo describe
+       ,updateAce = function (ace, theme) {
+          ace.setTheme('ace/theme/' + theme);
+          ace.$blockScrolling = Infinity;
+          ace.setOptions({
+            fontFamily: "monaco",
+            fontSize:   "1em"
+          });
+        }
+
+
         //// `updateArticle()`
-        //// - `title <string>                  `  display-name for the article
+        //// - `label <string>                  `  filename for the article
         //// - `source <array of File|Directory>`  article files and directories
-       ,updateArticle = function (title, identifier, source) {
+       ,updateArticle = function (label, identifier, source) {
           var out, i, l, i2, l2, file, subfile, $$dirs, $$files;
 
           //// Generate the HTML, and replace any previously-existing HTML. 
-          out = ['<h3>' + title + '<i>&#x25CF;</i></h3><ul>'];
+          out = ['<h3>' + label + '<i>&#x25CF;</i></h3><ul>'];
           for (i=0, l=source.length; i<l; i++) {
             file = source[i];
             if ('File' == file.C) { // is a top-level file
               out.push('<li id="' + identifier + '-' + i + '" class="file">');
-              out.push(file.title);
+              out.push(file.label);
             } else { // is a top-level directory
               out.push('<li id="' + identifier + '-' + i + '" class="max">');
-              out.push('  <h4>' + file.title + '<i>&#x25CF;</i></h3></h4>');
+              out.push('  <h4>' + file.label + '<i>&#x25CF;</i></h3></h4>');
               out.push('  <ul>');
               for (i2=0, l2=file.files.length; i2<l2; i2++) {
                 subfile = file.files[i2];
                 out.push('    <li id="' + identifier + '-' + i + '-' + i2 + '" '
-                  + 'class="file">' + subfile.title + '</li>'
+                  + 'class="file">' + subfile.label + '</li>'
                 );
               }
               out.push('  </ul>');
@@ -190,13 +245,13 @@
           out.push('</ul>');
           $('#' + identifier).innerHTML = out.join('\n');
 
-          //// Min/max the article when its title is clicked. 
+          //// Min/max the article when its label is clicked. 
           $('#' + identifier + ' h3').addEventListener('click', function (event) {
             event.stopPropagation();
             this.parentNode.className = this.parentNode.className == 'min' ? 'max' : 'min';
           }, true);
 
-          //// Min/max Directories when their titles are clicked. 
+          //// Min/max Directories when their labels are clicked. 
           $$dirs = $$('#' + identifier + ' ul h4');
           for (i=0, l=$$dirs.length; i<l; i++) {
             $$dirs[i].addEventListener('click', function (event) {
@@ -205,7 +260,7 @@
             }, true);
           }
 
-          //// Open Files when their titles are clicked. 
+          //// Open Files when their labels are clicked. 
           $$files = $$('#' + identifier + ' li');
           for (i=0, l=$$files.length; i<l; i++) {
             if ('file' == $$files[i].className) {
@@ -215,10 +270,10 @@
 
                 //// Get a reference to the File instance, and the tab element if it exists. 
                 file = liIdToFile(id);
-                $tab = $('#edit-' + id);
+                $tab = $('#' + (file.write ? 'edit-' : 'read-') + id);
 
                 //// If a tab for this file does not exist, create it. 
-                if (! $tab) { $tab = createTab(id, file); }
+                if (! $tab) { $tab = addTab(id, file); }
 
                 //// Highlight the tab, and fill `editor` with its content. 
                 activateTab($tab, file);
@@ -232,24 +287,20 @@
 
 
       //// Initialize articles. 
-      updateArticle('Helpers'  , 'helpers'  , pegdev.helpers  );
-      updateArticle('Languages', 'languages', pegdev.languages);
-      updateArticle('Oopish'   , 'oopish'   , pegdev.oopish   );
-      updateArticle('Project'  , 'project'  , pegdev.project  );
+      updateArticle('Helpers'  , 'helpers'  , develoop.helpers  );
+      updateArticle('Languages', 'languages', develoop.languages);
+      updateArticle('Oopish'   , 'oopish'   , develoop.oopish   );
+      updateArticle('Project'  , 'project'  , develoop.project  );
 
 
       //// Initialize tabs. @todo more init tabs?
       updateInfo();
+      updateLog();
 
 
       //// Configure ACE. 
-      editor.setTheme('ace/theme/monokai');
-      editor.session.setMode('ace/mode/javascript');
-      editor.$blockScrolling = Infinity;
-      editor.setOptions({
-        fontFamily: "monaco",
-        fontSize:   "1em"
-      });
+      updateAce(editor, 'monokai');
+      updateAce(reader, 'iplastic');
 
     });
   </script>
@@ -268,8 +319,9 @@
     body {
       font: 1em/1 "Arial", sans-serif;
     }
-    @media screen and (min-width: 1265px) {
-      body { font-size: 1.18em; }
+    @media screen and (min-width: 1265px) { /* eg 1280x800 MacBook */
+/*      body { font-size: 1.18em; }*/
+      body { font-size: 1.5em; }
     }
     @media screen and (min-width: 1420px) {
       body { font-size: 1.334em; }
@@ -348,21 +400,27 @@
     /* SECTIONS */
     section {
       display: inline-block;
-      width: 16.5em;
       vertical-align: top;
     }
     section.files-left {
+      width: 10.5em;
     }
     section.files-right {
+      width: 14.5em;
     }
 
 
     /* ARTICLES */
     article {
       display: inline-block;
-      width: 16em;
       margin: 0 0.25em 0.5em 0.25em;
       vertical-align: top;
+    }
+    section.files-left  article {
+      width: 10em;
+    }
+    section.files-right article {
+      width: 14em;
     }
     h3, h4, li {
       -webkit-touch-callout: none; /* Android and iOS callouts*/
@@ -383,6 +441,7 @@
       transition:     background 0.3s, color 0.3s;
     }
     #edit h3,
+    #read h3,
     article.max h3,
     li.max h4 {
       border-radius:  4px 4px 0 0;
@@ -418,14 +477,10 @@
       margin-bottom: 0.25em;
       background: #999;
     }
-    #helpers   li,
-    #oopish    li.file,
-    #oopish    li li,
-    #project   li.file,
-    #project   li li,
-    article li li {
+    article li.file {
       padding:    0.3em 0.5em;
       background: #ccc;
+      font-size:  0.9em;
     }
 
 
@@ -457,57 +512,74 @@
     }
 
 
-    /* EDITOR */
-    #edit {
+    /* EDITOR AND READER */
+    #edit,
+    #read {
       position:   absolute;
-      left:       34.25em;
+      left:       26.25em;
       right:      0.5em;
       width:      auto;
       padding:    0;
     }
-    #edit h3 {
+    #read {
+      top: 19em;
+    }
+    #edit h3,
+    #read h3 {
       display: inline-block;
       margin: 0  4px  0.5em 0;
       background: #aaa;
       color: #333;
       font-weight: normal;
     }
-    #edit h3.active {
+    #edit h3.active,
+    #read h3.active {
       margin: 0  4px  0  0;
       padding-bottom: 1em;
       background: #eee;
     }
-    #edit h3#info {
+    #edit h3#info,
+    #read h3#log {
       padding-left:  1em;
       padding-right: 1em;
       font-weight:   bold;
       transition: background 0.15s;
     }
-    #edit ul {
+    #edit ul,
+    #read ul {
       background:    #eee;
       border-radius: 4px;
     }
-    #edit.info-is-active ul {
+    #edit.info-is-active ul,
+    #read.log-is-active  ul {
       border-radius: 0  4px  4px  4px;
     }
-    #edit.info-is-active #editor {
+    #edit.info-is-active #editor,
+    #read.log-is-active  #reader {
       z-index: -1;
     }
-    #edit h3 span {
+    #edit h3 span,
+    #read h3 span {
       padding-right: 1em;
     }
     #edit h3#info span, /* info icon */
     #edit h3 i,         /* identifier dot */
-    #edit h3 em {       /* close button */
+    #edit h3 em,       /* close button */
+    #read h3#log span,
+    #read h3 i,
+    #read h3 em {
       padding:        0.03em  0.2em  0.04em  0.25em;
     }
-    #edit h3#info {
+    #edit h3#info,
+    #read h3#log {
       height: 1.1em;
     }
-    #edit h3 i {
+    #edit h3 i,
+    #read h3 i {
       font-size: 1.2em;
     }
-    #edit h3 em {
+    #edit h3 em,
+    #read h3 em {
       margin-top:     -0.05em;
       border-radius:  2em;
       background:     #999;
@@ -515,16 +587,18 @@
       font-size:      0;
       transition:     background 0.3s, color 0.3s;
     }
-    #edit h3.active i { /* identifier dot */
+    #edit h3.active i, /* identifier dot */
+    #read h3.active i {
       font-size: 0;
     }
-    #edit h3.active em {
+    #edit h3.active em,
+    #read h3.active em {
       font-size: 1.2em;
     }
     pre { /* ace editors */
       position:  relative!important;
-      width:        75%;
-      height:      200px;
+      width:        92%;
+      height:      12em;
       /*
       height:      20em;
       top:          2.5em;
@@ -535,21 +609,26 @@
 
 
     /* INTERACTION AND COLOR */
-    #edit h3#info:hover {
+    #edit h3#info:hover,
+    #read h3#log:hover {
       background: #fc3;
       cursor:     pointer;
     }
-    #edit h3#info.active:hover {
+    #edit h3#info.active:hover,
+    #read h3#log.active:hover {
       background: #eee;
       cursor:     default;
     }
-    #edit h3:hover {
+    #edit h3:hover,
+    #read h3:hover {
       background: #ccc;
     }
-    #edit h3.active:hover {
+    #edit h3.active:hover,
+    #read h3.active:hover {
       background: #eee;
     }
-    #edit h3 em:hover {
+    #edit h3 em:hover,
+    #read h3 em:hover {
       background: #333;
     }
 
@@ -572,6 +651,8 @@
     /* INTERACTION AND COLOR: ARTICLES */
     #edit h3[id^="edit-helpers-"] em:hover,
     #edit h3[id^="edit-helpers-"] i,
+    #read h3[id^="read-helpers-"] em:hover,
+    #read h3[id^="read-helpers-"] i,
     #helpers:hover h3,
     #helpers.max h3 i,
     #helpers li:hover h4,
@@ -584,6 +665,8 @@
 
     #edit h3[id^="edit-languages-"] em:hover,
     #edit h3[id^="edit-languages-"] i,
+    #read h3[id^="read-languages-"] em:hover,
+    #read h3[id^="read-languages-"] i,
     #languages:hover h3,
     #languages.max h3 i,
     #languages li:hover h4,
@@ -598,6 +681,8 @@
     footer a:hover,
     #edit h3[id^="edit-oopish-"] em:hover,
     #edit h3[id^="edit-oopish-"] i,
+    #read h3[id^="read-oopish-"] em:hover,
+    #read h3[id^="read-oopish-"] i,
     #oopish:hover h3,
     #oopish.max h3 i,
     #oopish li:hover h4,
@@ -610,6 +695,8 @@
 
     #edit h3[id^="edit-project-"] em:hover,
     #edit h3[id^="edit-project-"] i,
+    #read h3[id^="read-project-"] em:hover,
+    #read h3[id^="read-project-"] i,
     #project:hover h3,
     #project.max h3 i,
     #project li:hover h4,
@@ -624,25 +711,30 @@
 </head>
 <body>
   <header>
-    <a href="../index.html" title="Pegdev Homepage">Pegdev</a><span
-    >/</span><a href="../index.html#/doc/usage" title="Pegdev Usage">Usage</a><span
-    >/</span><a href="03-pegdev-gui.html" title="Refresh this page">Pegdev GUI</a>
+    <a href="../index.html" title="Develoop Homepage">Develoop</a><span
+    >/</span><a href="../index.html#/doc/usage" title="Develoop Usage">Usage</a><span
+    >/</span><a href="03-develoop-gui.html" title="Refresh this page">Develoop GUI</a>
   </header>
   <main>
-    <section>
+    <section class="files-left">
       <article id="helpers"   class="max"></article>
       <article id="languages" class="max"></article>
     </section>
-    <section>
+    <section class="files-right">
       <article id="oopish"    class="max"></article>
       <article id="project"   class="max"></article>
     </section>
     <section id="edit" class="info-is-active">
-      <div id="tabs"><h3 id="info" class="active" title="Info"><span>?</span></h3></div>
+      <div id="edit-tabs"><h3 id="info" class="active" title="Info"><span>?</span></h3></div>
       <ul>
         <li><pre id="editor"></pre></li>
       </ul>
-      
+    </section>
+    <section id="read" class="log-is-active">
+      <div id="read-tabs"><h3 id="log" class="active" title="Log"><span>&gt;_</span></h3></div>
+      <ul>
+        <li><pre id="reader"></pre></li>
+      </ul>
     </section>
   </main>
   <footer>

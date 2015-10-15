@@ -1,8 +1,8 @@
 {
-  "name": "pegdev",
-  "version": "0.0.10",
+  "name": "develoop",
+  "version": "0.0.11",
   "description": "A pleasant environment for developing the Oopish programming language",
-  "main": "build/pegdev.js",
+  "main": "build/develoop.js",
   "directories": {
     "doc": "doc",
     "test": "test",
@@ -27,12 +27,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/oopish/pegdev.git"
+    "url": "git+https://github.com/oopish/develoop.git"
   },
   "author": "Rich Plastow <rich@richplastow.com> (http://richplastow.com/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/oopish/pegdev/issues"
+    "url": "https://github.com/oopish/develoop/issues"
   },
-  "homepage": "http://pegdev.oopish.com/"
+  "homepage": "http://develoop.oopish.com/"
 }

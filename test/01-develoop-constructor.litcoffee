@@ -1,9 +1,9 @@
-01 Pegdev Constructor
-=====================
+01 Develoop Constructor
+=======================
 
 
     tudor.add [
-      "01 Pegdev Constructor Usage"
+      "01 Develoop Constructor Usage"
       tudor.is
 
 
@@ -16,7 +16,7 @@
       "The class and instance are expected types"
 
 
-      "The Pegdev class is a function"
+      "The Develoop class is a function"
       ªF
       -> Main
 
@@ -32,8 +32,8 @@
       tudor.equal
 
 
-      "`Pegdev.toString()` is '[object Pegdev]'"
-      '[object Pegdev]'
+      "`Develoop.toString()` is '[object Develoop]'"
+      '[object Develoop]'
       (main) -> '' + main
 
 Basic PEGjs tests. 

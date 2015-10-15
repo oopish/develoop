@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Pegdev Basic Usage</title>
+  <title>Develoop Basic Usage</title>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-  <script src="../build/pegdev.js"></script>
+  <script src="../build/develoop.js"></script>
   <script src="../node_modules/ace-master-with-pegjs/build/src/ace.js"></script>
   <script>
     addEventListener('load', function () {
@@ -20,7 +20,7 @@
 
 
         ////@!todo describe
-       ,pegdev = new Pegdev({
+       ,develoop = new Develoop({
         })
 
 
@@ -28,7 +28,7 @@
        ,parser
        ,parseGrammar = function () {
           try {
-            parser = pegdev.pegjs.buildParser( grammarEd.getValue() );
+            parser = develoop.pegjs.buildParser( grammarEd.getValue() );
             parserEd.setValue(''+parser.parse);
             compileSource();
           } catch(error) {
@@ -231,8 +231,8 @@
 </head>
 <body style="background:#999;">
   <h1>
-    <a href="../index.html" title="Pegdev Homepage">Pegdev</a> /
-    <a href="../index.html#/doc/usage" title="Pegdev Usage">Usage</a> /
+    <a href="../index.html" title="Develoop Homepage">Develoop</a> /
+    <a href="../index.html#/doc/usage" title="Develoop Usage">Usage</a> /
     <a href="01-basic-usage.html" title="Refresh this page">Basic Usage</a>
   </h1>
   <main>

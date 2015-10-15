@@ -1,4 +1,4 @@
-var Pegdev = require('../../pegdev');
-console.log( new Pegdev().C ); // Pegdev
+var Develoop = require('../../develoop');
+console.log( new Develoop().C ); // Develoop
 
 //@todo usage examples

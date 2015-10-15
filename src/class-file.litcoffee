@@ -31,6 +31,12 @@ Xx. @todo describe
         @notes = config.notes
 
 
+#### `write <boolean>`
+Xx. @todo describe
+
+        @write = !! config.write
+
+
 #### `value <any>` (optional)
 The content of the file, usually a multiline string. 
 

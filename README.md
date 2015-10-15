@@ -1,19 +1,19 @@
-Pegdev
+Develoop
 ========
 
 
 #### A pleasant environment for developing the Oopish programming language
 
-- [Homepage](http://pegdev.oopish.com/)
-- [Documentation](http://pegdev.oopish.com/#/doc/documentation)
-- [Fork Pegdev on GitHub](https://github.com/oopish/pegdev)
+- [Homepage](http://develoop.oopish.com/)
+- [Documentation](http://develoop.oopish.com/#/doc/documentation)
+- [Fork Develoop on GitHub](https://github.com/oopish/develoop)
 
 
 #### Usage
 
-- [Usage](http://pegdev.oopish.com/#/doc/usage)
+- [Usage](http://develoop.oopish.com/#/doc/usage)
 
 
 #### Test
 
-- [Test](http://pegdev.oopish.com/test/run-test.html)
+- [Test](http://develoop.oopish.com/test/run-test.html)
