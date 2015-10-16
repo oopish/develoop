@@ -1,6 +1,6 @@
 {
   "name": "develoop",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "A pleasant environment for developing the Oopish programming language",
   "main": "build/develoop.js",
   "directories": {

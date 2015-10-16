@@ -140,9 +140,9 @@
         //// Appends a new tab to the '#edit-tabs' or '#read-tabs' element. 
        ,addTab = function (id, file) { // eg 'project-2-0'
           var $tab = document.createElement('h3');
-          $tab.id = (file.write ? 'edit-' : 'read-') + id;
-          $tab.innerHTML = '<span>' + file.label + '</span><i>&#x25CF;</i><em>&#x2716;</em>';
-          $( '#' + (file.write ? 'edit' : 'read') + '-tabs' ).appendChild($tab); // note no leading or trailing space
+          $tab.id = (file.editable ? 'edit-' : 'read-') + id;
+          $tab.innerHTML = '<span>' + file.label + '</span><i></i><em></em>';
+          $( '#' + (file.editable ? 'edit' : 'read') + '-tabs' ).appendChild($tab); // note no leading or trailing space
 
           //// Add a click-handler to the tab. 
           $tab.addEventListener('click', function (event) {
@@ -226,7 +226,7 @@
           for (i=0, l=source.length; i<l; i++) {
             file = source[i];
             if ('File' == file.C) { // is a top-level file
-              out.push('<li id="' + identifier + '-' + i + '" class="file">');
+              out.push('<li id="' + identifier + '-' + i + '" class="' + (file.editable ? 'editable ' : '') + 'file">');
               out.push(file.label);
             } else { // is a top-level directory
               out.push('<li id="' + identifier + '-' + i + '" class="max">');
@@ -235,7 +235,7 @@
               for (i2=0, l2=file.files.length; i2<l2; i2++) {
                 subfile = file.files[i2];
                 out.push('    <li id="' + identifier + '-' + i + '-' + i2 + '" '
-                  + 'class="file">' + subfile.label + '</li>'
+                  + 'class="' + (subfile.editable ? 'editable ' : '') + 'file">' + subfile.label + '</li>'
                 );
               }
               out.push('  </ul>');
@@ -263,14 +263,14 @@
           //// Open Files when their labels are clicked. 
           $$files = $$('#' + identifier + ' li');
           for (i=0, l=$$files.length; i<l; i++) {
-            if ('file' == $$files[i].className) {
+            if ( 'file' == $$files[i].className.slice(-4) ) {
               $$files[i].addEventListener('click', function (event) {
                 var file, $tab, id = this.id;
                 event.stopPropagation();
 
                 //// Get a reference to the File instance, and the tab element if it exists. 
                 file = liIdToFile(id);
-                $tab = $('#' + (file.write ? 'edit-' : 'read-') + id);
+                $tab = $('#' + (file.editable ? 'edit-' : 'read-') + id);
 
                 //// If a tab for this file does not exist, create it. 
                 if (! $tab) { $tab = addTab(id, file); }
@@ -317,7 +317,7 @@
       font-size: 62.5%; /* 1em = 10px */
     }
     body {
-      font: 1em/1 "Arial", sans-serif;
+      font: 1em/1 'Arial', sans-serif;
     }
     @media screen and (min-width: 1265px) { /* eg 1280x800 MacBook */
 /*      body { font-size: 1.18em; }*/
@@ -479,8 +479,12 @@
     }
     article li.file {
       padding:    0.3em 0.5em;
-      background: #ccc;
+      background: #eee;
       font-size:  0.9em;
+    }
+    article li.editable.file {
+      background: #111;
+      color: #bbb;
     }
 
 
@@ -527,15 +531,26 @@
     #edit h3,
     #read h3 {
       display: inline-block;
-      margin: 0  4px  0.5em 0;
-      background: #aaa;
-      color: #333;
+      margin: 0  4px  0.3em 0; /*@next fix this */
       font-weight: normal;
+    }
+    #edit h3 {
+      color:      #ccc;
+      background: #808080;
+    }
+    #read h3 {
+      color:      #333;
+      background: #808080;
     }
     #edit h3.active,
     #read h3.active {
       margin: 0  4px  0  0;
       padding-bottom: 1em;
+    }
+    #edit h3.active {
+      background: #111;
+    }
+    #read h3.active {
       background: #eee;
     }
     #edit h3#info,
@@ -547,8 +562,13 @@
     }
     #edit ul,
     #read ul {
-      background:    #eee;
       border-radius: 4px;
+    }
+    #edit ul {
+      background: #111;
+    }
+    #read ul {
+      background: #eee;
     }
     #edit.info-is-active ul,
     #read.log-is-active  ul {
@@ -576,24 +596,32 @@
     }
     #edit h3 i,
     #read h3 i {
-      font-size: 1.2em;
+      height: 0.8em;
+      padding: 0.3em  0.4em; /* hide when active */
+      /*@todo test this minimal SVG: <svg xmlns="http://www.w3.org/2000/svg" width="512px" height="512px"><circle fill="#FF33EE" cx="256" cy="256" r="128"/></svg> */
+      background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTJweCIgaGVpZ2h0PSI1MTJweCI+PGNpcmNsZSBmaWxsPSIjRkYzM0VFIiBjeD0iMjU2IiBjeT0iMjU2IiByPSIxMjgiLz48L3N2Zz4=') center no-repeat;
+      background-size: contain;
+      font-size: 1em;
+      line-height: 0;
+      transition: padding 0.3s;
     }
     #edit h3 em,
     #read h3 em {
-      margin-top:     -0.05em;
-      border-radius:  2em;
-      background:     #999;
-      color:          #eee;
-      font-size:      0;
-      transition:     background 0.3s, color 0.3s;
+      height: 0.8em;
+      padding: 0.3em  0; /* show when active */
+      background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEycHgiIGhlaWdodD0iNTEycHgiIGNsYXNzPSJzaGFkb3ciIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmVyc2lvbj0iMS4xIj48ZGVmcz48ZmlsdGVyIGlkPSJmMSI+PGZlR2F1c3NpYW5CbHVyIGluPSJTb3VyY2VHcmFwaGljIiBzdGREZXZpYXRpb249IjUiIC8+PC9maWx0ZXI+PC9kZWZzPjxwYXRoIGZpbGw9IiMyMzFGMjAiIGQ9Ik0yNTYsNkMxMTcuOTI5LDYsNiwxMTcuOTI5LDYsMjU2czExMS45MjksMjUwLDI1MCwyNTBzMjUwLTExMS45MjksMjUwLTI1MFMzOTQuMDcxLDYsMjU2LDZ6IE00MDguNzM1LDMzOC4wMjRsLTcwLjcxMSw3MC43MTFMMjU2LDMyNi43MTFsLTgyLjAyNCw4Mi4wMjRsLTcwLjcxLTcwLjcxMUwxODUuMjksMjU2bC04Mi4wMjQtODIuMDI0bDcwLjcxLTcwLjcxMUwyNTYsMTg1LjI4OSBsODIuMDI0LTgyLjAyNGw3MC43MTEsNzAuNzExTDMyNi43MTEsMjU2TDQwOC43MzUsMzM4LjAyNHoiLz48L3N2Zz4=') center no-repeat;
+      background-size: contain;
+      font-size: 1em;
+      line-height: 0;
+      transition: padding 0.3s;
     }
     #edit h3.active i, /* identifier dot */
     #read h3.active i {
-      font-size: 0;
+      padding: 0.3em  0;
     }
     #edit h3.active em,
     #read h3.active em {
-      font-size: 1.2em;
+      padding: 0.3em  0.4em;
     }
     pre { /* ace editors */
       position:  relative!important;
@@ -609,27 +637,27 @@
 
 
     /* INTERACTION AND COLOR */
-    #edit h3#info:hover,
-    #read h3#log:hover {
-      background: #fc3;
-      cursor:     pointer;
+    #edit h3:not(.active):hover {
+      background: #333;
     }
-    #edit h3#info.active:hover,
-    #read h3#log.active:hover {
-      background: #eee;
-      cursor:     default;
-    }
-    #edit h3:hover,
-    #read h3:hover {
+    #read h3:not(.active):hover {
       background: #ccc;
-    }
-    #edit h3.active:hover,
-    #read h3.active:hover {
-      background: #eee;
     }
     #edit h3 em:hover,
     #read h3 em:hover {
-      background: #333;
+      opacity: 0.8;
+    }
+    #edit h3#info.active:hover,
+    #read h3#log.active:hover {
+      cursor:     default;
+    }
+    #edit h3#info:not(.active):hover {
+      color:      #fc3;
+      cursor:     pointer;
+    }
+    #read h3#log:not(.active):hover {
+      background: #fc3;
+      cursor:     pointer;
     }
 
 
@@ -655,12 +683,18 @@
     #read h3[id^="read-helpers-"] i,
     #helpers:hover h3,
     #helpers.max h3 i,
+    #helpers li.editable.file:hover,
     #helpers li:hover h4,
     #helpers li.max h4 i {
       color: #3ef;
     }
-    #helpers li.file:hover {
+    #helpers li.file:not(.editable):hover {
       background: #3ef;
+    }
+    #edit h3[id^="edit-helpers-"] i,
+    #read h3[id^="read-helpers-"] i {
+              filter: hue-rotate(270deg) brightness(170%);
+      -webkit-filter: hue-rotate(270deg) brightness(170%);
     }
 
     #edit h3[id^="edit-languages-"] em:hover,
@@ -669,12 +703,18 @@
     #read h3[id^="read-languages-"] i,
     #languages:hover h3,
     #languages.max h3 i,
+    #languages li.editable.file:hover,
     #languages li:hover h4,
     #languages li.max h4 i {
       color: #ef3;
     }
-    #languages li.file:hover {
+    #languages li.file:not(.editable):hover {
       background: #ef3;
+    }
+    #edit h3[id^="edit-languages-"] i,
+    #read h3[id^="read-languages-"] i {
+              filter: hue-rotate(125deg) brightness(200%);
+      -webkit-filter: hue-rotate(125deg) brightness(200%);
     }
 
     header a:hover,
@@ -685,11 +725,12 @@
     #read h3[id^="read-oopish-"] i,
     #oopish:hover h3,
     #oopish.max h3 i,
+    #oopish li.editable.file:hover,
     #oopish li:hover h4,
     #oopish li.max h4 i {
       color: #f3e;
     }
-    #oopish li.file:hover {
+    #oopish li.file:not(.editable):hover {
       background: #f3e;
     }
 
@@ -699,12 +740,18 @@
     #read h3[id^="read-project-"] i,
     #project:hover h3,
     #project.max h3 i,
+    #project li.editable.file:hover,
     #project li:hover h4,
     #project li.max h4 i {
       color: #2f3;
     }
-    #project li.file:hover {
+    #project li.file:not(.editable):hover {
       background: #2f3;
+    }
+    #edit h3[id^="edit-project-"] i,
+    #read h3[id^="read-project-"] i {
+              filter: hue-rotate(180deg) brightness(170%);
+      -webkit-filter: hue-rotate(180deg) brightness(170%);
     }
 
   </style>

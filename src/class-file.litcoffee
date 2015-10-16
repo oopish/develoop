@@ -31,10 +31,10 @@ Xx. @todo describe
         @notes = config.notes
 
 
-#### `write <boolean>`
+#### `editable <boolean>`
 Xx. @todo describe
 
-        @write = !! config.write
+        @editable = !! config.editable
 
 
 #### `value <any>` (optional)
